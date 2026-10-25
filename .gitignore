@@ -1,0 +1,41 @@
+# Node dependencies
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+dist-ssr/
+*.local
+
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+**/venv/
+ENV/
+*.db
+*.sqlite3
+backend/skincare_ai.db
+
+# Environment
+.env
+.env.local
+
+# Uploads and temporary artifacts
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# IDEs & System
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db

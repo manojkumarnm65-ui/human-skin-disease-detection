@@ -1,0 +1,372 @@
+:root {
+  --bg-primary: #020B1C;
+  --bg-secondary: #06172D;
+  --bg-card: #071B33;
+  --bg-card-hover: #0B2545;
+  --bg-glass: rgba(7, 27, 51, 0.75);
+  
+  --electric-blue: #087BFF;
+  --cyan-accent: #08C9F5;
+  --cyan-glow: rgba(8, 201, 245, 0.35);
+  --blue-glow: rgba(8, 123, 255, 0.35);
+
+  --text-primary: #FFFFFF;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-cyan: #08C9F5;
+
+  --border-color: rgba(8, 201, 245, 0.18);
+  --border-hover: rgba(8, 201, 245, 0.45);
+  --border-card: rgba(255, 255, 255, 0.08);
+
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-info: #08C9F5;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 25px rgba(8, 201, 245, 0.25);
+  --shadow-glow-strong: 0 0 35px rgba(8, 201, 245, 0.45);
+
+  /* Primary Typography set to Times New Roman as requested */
+  --font-main: 'Times New Roman', Times, Georgia, serif;
+  --font-mono: 'Times New Roman', Times, monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: #0E3360;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cyan-accent);
+}
+
+/* Typography utilities with Times New Roman */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-main);
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1.25;
+}
+
+button, input, select, textarea {
+  font-family: var(--font-main);
+}
+
+.cyan-gradient-text {
+  background: linear-gradient(135deg, #08C9F5 0%, #087BFF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-muted {
+  color: var(--text-secondary);
+}
+
+/* Glassmorphism Cards */
+.card-glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-glass:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-glow);
+}
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--electric-blue) 0%, var(--cyan-accent) 100%);
+  color: #FFFFFF;
+  font-family: var(--font-main);
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(8, 201, 245, 0.3);
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(8, 201, 245, 0.5);
+  filter: brightness(1.1);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(8, 123, 255, 0.12);
+  color: var(--cyan-accent);
+  font-family: var(--font-main);
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+
+.btn-secondary:hover {
+  background: rgba(8, 123, 255, 0.22);
+  border-color: var(--cyan-accent);
+  color: #FFFFFF;
+  transform: translateY(-2px);
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-main);
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-outline:hover {
+  color: #FFFFFF;
+  border-color: var(--cyan-accent);
+  background: rgba(8, 201, 245, 0.05);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  font-family: var(--font-main);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-full);
+}
+
+.badge-cyan {
+  background: rgba(8, 201, 245, 0.12);
+  color: var(--cyan-accent);
+  border: 1px solid rgba(8, 201, 245, 0.3);
+}
+
+.badge-concerning {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.badge-benign {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.badge-chronic {
+  background: rgba(245, 158, 11, 0.15);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+/* Scanning & HUD Animations */
+@keyframes laserScan {
+  0% {
+    top: 5%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 90%;
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.8;
+  }
+}
+
+@keyframes hudRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(8, 201, 245, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(8, 201, 245, 0.6);
+  }
+}
+
+/* Inputs & Form Controls */
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(2, 11, 28, 0.7);
+  border: 1px solid rgba(8, 201, 245, 0.2);
+  border-radius: var(--radius-md);
+  color: #FFFFFF;
+  font-size: 1rem;
+  font-family: var(--font-main);
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--cyan-accent);
+  box-shadow: 0 0 15px rgba(8, 201, 245, 0.3);
+  background: rgba(2, 11, 28, 0.9);
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+  font-family: var(--font-main);
+}
+
+/* Medical Disclaimer Banner */
+.disclaimer-banner {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-left: 4px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  color: #FDE68A;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Print-optimized clinical report styles */
+@media print {
+  html, body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    font-family: 'Times New Roman', Times, serif !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+  #printable-clinical-report, #printable-clinical-report * {
+    visibility: visible;
+  }
+  #printable-clinical-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    font-family: 'Times New Roman', Times, serif !important;
+    padding: 30px;
+    margin: 0;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  #printable-clinical-report h1,
+  #printable-clinical-report h2,
+  #printable-clinical-report h3,
+  #printable-clinical-report h4,
+  #printable-clinical-report p,
+  #printable-clinical-report span,
+  #printable-clinical-report div,
+  #printable-clinical-report td,
+  #printable-clinical-report th {
+    color: #000000 !important;
+    font-family: 'Times New Roman', Times, serif !important;
+  }
+  #printable-clinical-report div[style*="background"] {
+    background: transparent !important;
+    border-color: #333333 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
