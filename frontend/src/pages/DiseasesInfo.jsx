@@ -12,7 +12,8 @@ import {
   ChevronUp,
   Info,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Sparkles
 } from 'lucide-react';
 import { diseaseService } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -25,6 +26,7 @@ const DiseasesInfo = () => {
   const [expandedId, setExpandedId] = useState(null);
 
   useEffect(() => {
+    document.title = 'Human Skin Disease Detection — Disease Library';
     const fetchDiseases = async () => {
       try {
         const res = await diseaseService.getDiseases();
@@ -110,7 +112,7 @@ const DiseasesInfo = () => {
                   padding: '8px 16px',
                   borderRadius: 'var(--radius-full)',
                   border: categoryFilter === cat ? '1px solid var(--cyan-accent)' : '1px solid rgba(255, 255, 255, 0.1)',
-                  background: categoryFilter === cat ? 'rgba(8, 201, 245, 0.15)' : 'rgba(2, 11, 28, 0.5)',
+                  background: categoryFilter === cat ? 'rgba(8, 201, 245, 0.15)' : 'rgba(1, 30, 75, 0.7)',
                   color: categoryFilter === cat ? 'var(--cyan-accent)' : 'var(--text-secondary)',
                   fontSize: '0.84rem',
                   fontWeight: 600,
@@ -153,17 +155,25 @@ const DiseasesInfo = () => {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  {/* Disease Image Thumbnail */}
                   <div style={{
-                    width: '44px',
-                    height: '44px',
+                    width: '56px',
+                    height: '56px',
                     borderRadius: '12px',
-                    background: 'rgba(8, 201, 245, 0.12)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'var(--cyan-accent)',
+                    overflow: 'hidden',
+                    border: '2px solid rgba(8, 201, 245, 0.4)',
+                    boxShadow: '0 0 15px rgba(8, 201, 245, 0.25)',
+                    flexShrink: 0,
+                    position: 'relative',
+                    background: 'rgba(1, 30, 75, 0.9)'
                   }}>
-                    <BookOpen size={22} />
+                    <img
+                      src={d.image_url || '/samples/sample_melanoma.jpg'}
+                      alt={d.name}
+                      className="lesion-img-hover"
+                      onError={(e) => { e.target.src = '/samples/sample_melanoma.jpg'; }}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
                   </div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
@@ -195,14 +205,73 @@ const DiseasesInfo = () => {
               {/* Expanded Card Body */}
               {isExpanded && (
                 <div style={{ padding: '0 28px 28px', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
-                  {/* Overview paragraph */}
-                  <div style={{ marginTop: '20px' }}>
-                    <h4 style={{ fontSize: '1rem', color: 'var(--cyan-accent)', marginBottom: '8px' }}>
-                      Overview & Pathophysiology
-                    </h4>
-                    <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, fontSize: '0.94rem' }}>
-                      {d.description}
-                    </p>
+                  {/* Visual Specimen & Overview Grid */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                    gap: '24px',
+                    marginTop: '20px',
+                    alignItems: 'center'
+                  }}>
+                    {/* Clinical Reference Specimen Image */}
+                    <div style={{
+                      position: 'relative',
+                      height: '220px',
+                      borderRadius: 'var(--radius-md)',
+                      overflow: 'hidden',
+                      border: '2px solid rgba(8, 201, 245, 0.35)',
+                      boxShadow: '0 8px 25px rgba(0, 0, 0, 0.5), 0 0 20px rgba(8, 201, 245, 0.25)',
+                      background: 'rgba(1, 30, 75, 0.9)'
+                    }}>
+                      <img
+                        src={d.image_url || '/samples/sample_melanoma.jpg'}
+                        alt={`${d.name} clinical specimen`}
+                        className="lesion-img-hover"
+                        onError={(e) => { e.target.src = '/samples/sample_melanoma.jpg'; }}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                      {/* Animated Scanning Line */}
+                      <div style={{
+                        position: 'absolute',
+                        left: 0,
+                        right: 0,
+                        height: '2px',
+                        background: 'linear-gradient(90deg, transparent, #08C9F5, #FFFFFF, #08C9F5, transparent)',
+                        boxShadow: '0 0 10px #08C9F5, 0 0 20px #08C9F5',
+                        animation: 'laserScan 3.5s ease-in-out infinite',
+                        zIndex: 5,
+                      }} />
+                      {/* HUD Badge */}
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '10px',
+                        left: '10px',
+                        background: 'rgba(1, 35, 90, 0.95)',
+                        padding: '4px 10px',
+                        borderRadius: 'var(--radius-sm)',
+                        fontSize: '0.74rem',
+                        color: 'var(--cyan-accent)',
+                        border: '1px solid rgba(8, 201, 245, 0.35)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        zIndex: 6,
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.5)'
+                      }}>
+                        <Sparkles size={12} />
+                        <span>Clinical Reference Specimen</span>
+                      </div>
+                    </div>
+
+                    {/* Overview & Pathophysiology */}
+                    <div>
+                      <h4 style={{ fontSize: '1.05rem', color: 'var(--cyan-accent)', marginBottom: '8px' }}>
+                        Overview & Pathophysiology
+                      </h4>
+                      <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, fontSize: '0.94rem' }}>
+                        {d.description}
+                      </p>
+                    </div>
                   </div>
 
                   {/* 2-Column Grid: Symptoms & Risk Factors */}
@@ -213,7 +282,7 @@ const DiseasesInfo = () => {
                     marginTop: '24px',
                   }}>
                     {/* Symptoms */}
-                    <div style={{ background: 'rgba(2, 11, 28, 0.6)', padding: '20px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ background: 'rgba(1, 30, 75, 0.75)', padding: '20px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(1, 75, 170, 0.45)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#FFFFFF', fontWeight: 700, marginBottom: '14px' }}>
                         <Activity size={18} color="var(--cyan-accent)" />
                         <span>Common Signs & Symptoms</span>
@@ -229,7 +298,7 @@ const DiseasesInfo = () => {
                     </div>
 
                     {/* Risk Factors */}
-                    <div style={{ background: 'rgba(2, 11, 28, 0.6)', padding: '20px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ background: 'rgba(1, 30, 75, 0.75)', padding: '20px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(1, 75, 170, 0.45)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#FFFFFF', fontWeight: 700, marginBottom: '14px' }}>
                         <AlertCircle size={18} color="#F59E0B" />
                         <span>General Risk Factors</span>
@@ -273,8 +342,8 @@ const DiseasesInfo = () => {
                           style={{
                             padding: '6px 12px',
                             borderRadius: 'var(--radius-sm)',
-                            background: 'rgba(2, 11, 28, 0.8)',
-                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                            background: 'rgba(1, 30, 75, 0.85)',
+                            border: '1px solid rgba(1, 75, 170, 0.45)',
                             fontSize: '0.78rem',
                             color: 'var(--text-secondary)',
                           }}

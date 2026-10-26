@@ -13,9 +13,10 @@ const Navbar = () => {
       position: 'sticky',
       top: 0,
       zIndex: 50,
-      background: 'rgba(2, 11, 28, 0.85)',
+      background: 'linear-gradient(180deg, rgba(1, 45, 115, 0.96) 0%, rgba(1, 35, 90, 0.94) 100%)',
       backdropFilter: 'blur(16px)',
-      borderBottom: '1px solid rgba(8, 201, 245, 0.15)',
+      borderBottom: '2px solid #014BAA',
+      boxShadow: '0 4px 25px rgba(1, 75, 170, 0.45)',
     }}>
       <div style={{
         maxWidth: '1280px',
@@ -37,11 +38,11 @@ const Navbar = () => {
             width: '42px',
             height: '42px',
             borderRadius: '10px',
-            background: 'linear-gradient(135deg, #087BFF 0%, #08C9F5 100%)',
+            background: 'linear-gradient(135deg, #014BAA 0%, #08C9F5 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 18px rgba(8, 201, 245, 0.45)',
+            boxShadow: '0 0 20px rgba(1, 75, 170, 0.55)',
           }}>
             <Activity size={24} color="#FFFFFF" strokeWidth={2.5} />
           </div>

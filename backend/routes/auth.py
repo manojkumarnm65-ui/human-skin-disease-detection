@@ -1,14 +1,40 @@
+import os
 import re
 import time
 import random
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from extensions import db
 from models.user import User
+from services.email_service import send_otp_email
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 EMAIL_REGEX = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+
+def validate_password_strength(password):
+    """
+    Validates password complexity:
+    - At least 8 characters
+    - At least one uppercase letter (A-Z)
+    - At least one lowercase letter (a-z)
+    - At least one digit (0-9)
+    - At least one special symbol (!@#$%^&*...)
+    """
+    if len(password) < 8:
+        return False, 'Password must be at least 8 characters long.'
+    if not re.search(r'[A-Z]', password):
+        return False, 'Password must contain at least one uppercase letter (A-Z).'
+    if not re.search(r'[a-z]', password):
+        return False, 'Password must contain at least one lowercase letter (a-z).'
+    if not re.search(r'[0-9]', password):
+        return False, 'Password must contain at least one number (0-9).'
+    if not re.search(r'[^A-Za-z0-9]', password):
+        return False, 'Password must contain at least one special character (!@#$%^&* etc.).'
+    return True, ''
 
 # In-memory OTP storage for registration and password recovery
 # Structure: { email: { 'otp': '123456', 'expires_at': timestamp, 'type': 'registration'|'reset', 'data': {...} } }
@@ -38,8 +64,9 @@ def send_registration_otp():
     if not email or not re.match(EMAIL_REGEX, email):
         return jsonify({'error': 'Please enter a valid email address'}), 400
 
-    if len(password) < 6:
-        return jsonify({'error': 'Password must be at least 6 characters long'}), 400
+    is_valid, msg = validate_password_strength(password)
+    if not is_valid:
+        return jsonify({'error': msg}), 400
 
     if confirm_password and password != confirm_password:
         return jsonify({'error': 'Passwords do not match'}), 400
@@ -61,14 +88,27 @@ def send_registration_otp():
         'password': password
     }
 
-    print(f"\n[OTP DISPATCH] >>> Verification Code for {email}: {otp_code} (Valid for 10 minutes) <<<\n")
+    # Dispatch real email via SMTP
+    email_result = send_otp_email(
+        to_email=email,
+        otp_code=otp_code,
+        full_name=full_name,
+        purpose='registration'
+    )
 
-    return jsonify({
+    print(f"\n[OTP DISPATCH] >>> Verification Code for {email}: {otp_code} (Valid for 10 minutes) <<<\n", flush=True)
+
+    res_data = {
         'message': f'Verification OTP successfully dispatched to {email}.',
-        'otp_preview': otp_code,
         'expires_in': 600,
-        'email': email
-    }), 200
+        'email': email,
+        'email_sent': email_result.get('success', False),
+        'email_simulated': email_result.get('simulated', False)
+    }
+    if not email_result.get('success', False):
+        res_data['otp_preview'] = otp_code
+
+    return jsonify(res_data), 200
 
 @auth_bp.route('/verify-registration-otp', methods=['POST'])
 def verify_registration_otp():
@@ -136,8 +176,9 @@ def register():
     if not email or not re.match(EMAIL_REGEX, email):
         return jsonify({'error': 'Please enter a valid email address'}), 400
 
-    if len(password) < 6:
-        return jsonify({'error': 'Password must be at least 6 characters long'}), 400
+    is_valid, msg = validate_password_strength(password)
+    if not is_valid:
+        return jsonify({'error': msg}), 400
 
     if confirm_password and password != confirm_password:
         return jsonify({'error': 'Passwords do not match'}), 400
@@ -207,14 +248,27 @@ def forgot_password_otp():
         'type': 'password_reset'
     }
 
-    print(f"\n[RECOVERY OTP DISPATCH] >>> Password Reset Code for {email}: {otp_code} (Valid for 10 minutes) <<<\n")
+    # Dispatch real email via SMTP
+    email_result = send_otp_email(
+        to_email=email,
+        otp_code=otp_code,
+        full_name=user.full_name,
+        purpose='password_reset'
+    )
 
-    return jsonify({
+    print(f"\n[RECOVERY OTP DISPATCH] >>> Password Reset Code for {email}: {otp_code} (Valid for 10 minutes) <<<\n", flush=True)
+
+    res_data = {
         'message': f'Password recovery code sent to {email}.',
-        'otp_preview': otp_code,
         'expires_in': 600,
-        'email': email
-    }), 200
+        'email': email,
+        'email_sent': email_result.get('success', False),
+        'email_simulated': email_result.get('simulated', False)
+    }
+    if not email_result.get('success', False):
+        res_data['otp_preview'] = otp_code
+
+    return jsonify(res_data), 200
 
 @auth_bp.route('/reset-password', methods=['POST'])
 def reset_password():
@@ -229,8 +283,9 @@ def reset_password():
     if not email or not submitted_otp or not new_password:
         return jsonify({'error': 'Email, recovery OTP, and new password are required'}), 400
 
-    if len(new_password) < 6:
-        return jsonify({'error': 'New password must be at least 6 characters long'}), 400
+    is_valid, msg = validate_password_strength(new_password)
+    if not is_valid:
+        return jsonify({'error': msg}), 400
 
     if confirm_password and new_password != confirm_password:
         return jsonify({'error': 'Passwords do not match'}), 400
@@ -281,3 +336,122 @@ def get_current_user():
     if not user:
         return jsonify({'error': 'User not found'}), 404
     return jsonify({'user': user.to_dict()}), 200
+
+@auth_bp.route('/smtp-status', methods=['GET'])
+def get_smtp_status():
+    """Returns whether SMTP is configured and the masked sender email."""
+    username = os.environ.get('SMTP_USERNAME', '').strip()
+    password = os.environ.get('SMTP_PASSWORD', '').strip()
+    configured = bool(username and password)
+    
+    masked = None
+    if configured and '@' in username:
+        parts = username.split('@')
+        masked = f"{parts[0][:3]}***@{parts[1]}"
+    
+    return jsonify({
+        'configured': configured,
+        'sender_email': masked,
+        'smtp_server': os.environ.get('SMTP_SERVER', 'smtp.gmail.com'),
+        'smtp_port': int(os.environ.get('SMTP_PORT', 587)),
+    }), 200
+
+@auth_bp.route('/smtp-config', methods=['POST'])
+def configure_smtp():
+    """Validates real SMTP credentials, sends a test email, and permanently writes to backend/.env."""
+    data = request.get_json() or {}
+    username = (data.get('smtp_username') or '').strip()
+    password = (data.get('smtp_password') or '').strip().replace(' ', '')
+    server = (data.get('smtp_server') or 'smtp.gmail.com').strip()
+    try:
+        port = int(data.get('smtp_port') or 587)
+    except ValueError:
+        port = 587
+    test_recipient = (data.get('test_recipient') or username).strip()
+
+    if not username or not password:
+        return jsonify({'error': 'Both sender email address and App Password are required'}), 400
+
+    # 1. Test live SMTP login & dispatch a test verification email
+    try:
+        print(f"[SMTP VERIFY] Testing connection to {server}:{port} with user {username}...")
+        if port == 465:
+            smtp_client = smtplib.SMTP_SSL(server, port, timeout=12)
+        else:
+            smtp_client = smtplib.SMTP(server, port, timeout=12)
+            smtp_client.starttls()
+
+        smtp_client.login(username, password)
+
+        # Dispatch test email
+        test_msg = MIMEMultipart()
+        test_msg['Subject'] = "Human Skin Disease Detection — SMTP Email Delivery Verified!"
+        test_msg['From'] = f"Human Skin Disease Detection AI <{username}>"
+        test_msg['To'] = test_recipient
+        test_body = (
+            f"Hello!\n\n"
+            f"Congratulations! Your SMTP email delivery connection has been verified successfully.\n"
+            f"From now on, all 6-digit verification OTP codes will be delivered directly to the user's specific email address.\n\n"
+            f"Sender Account: {username}\n"
+            f"System: Human Skin Disease Detection AI Platform\n"
+        )
+        test_msg.attach(MIMEText(test_body, 'plain'))
+        smtp_client.sendmail(username, [test_recipient], test_msg.as_string())
+        smtp_client.quit()
+        print(f"[SMTP VERIFY SUCCESS] Test email delivered to {test_recipient}!")
+
+    except Exception as e:
+        err = str(e)
+        print(f"[SMTP VERIFY FAILED] Error: {err}")
+        return jsonify({
+            'error': f"SMTP Connection Failed: {err}. If using Gmail, ensure 2-Step Verification is ON and you generated a 16-character App Password at myaccount.google.com/apppasswords."
+        }), 400
+
+    # 2. Persist to backend/.env file
+    env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+    try:
+        env_lines = []
+        if os.path.exists(env_path):
+            with open(env_path, 'r', encoding='utf-8') as f:
+                env_lines = f.readlines()
+
+        keys_to_update = {
+            'SMTP_SERVER': server,
+            'SMTP_PORT': str(port),
+            'SMTP_USERNAME': username,
+            'SMTP_PASSWORD': password,
+            'SMTP_FROM_EMAIL': username,
+            'SMTP_USE_TLS': 'True'
+        }
+
+        updated_keys = set()
+        new_lines = []
+        for line in env_lines:
+            matched = False
+            for k, v in keys_to_update.items():
+                if line.startswith(f"{k}="):
+                    new_lines.append(f"{k}={v}\n")
+                    updated_keys.add(k)
+                    matched = True
+                    break
+            if not matched:
+                new_lines.append(line)
+
+        for k, v in keys_to_update.items():
+            if k not in updated_keys:
+                new_lines.append(f"{k}={v}\n")
+
+        with open(env_path, 'w', encoding='utf-8') as f:
+            f.writelines(new_lines)
+
+        # Update current process environment immediately without requiring restart
+        for k, v in keys_to_update.items():
+            os.environ[k] = v
+
+    except Exception as e:
+        print(f"[SMTP CONFIG WARNING] Could not write .env file: {e}")
+
+    return jsonify({
+        'success': True,
+        'message': f"SMTP successfully connected! A test verification email was sent to {test_recipient}. All future OTPs will now be delivered directly to the recipient's inbox."
+    }), 200

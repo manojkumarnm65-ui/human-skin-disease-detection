@@ -49,6 +49,8 @@ export const authService = {
   logout: () => api.post('/auth/logout'),
   getMe: () => api.get('/auth/me'),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  getSmtpStatus: () => api.get('/auth/smtp-status'),
+  configureSmtp: (data) => api.post('/auth/smtp-config', data),
 };
 
 // Dashboard Services
@@ -80,7 +82,11 @@ export const profileService = {
   getProfile: () => api.get('/profile'),
   updateProfile: (data) => api.patch('/profile', data),
   changePassword: (data) => api.patch('/profile/password', data),
-  deleteAccount: (password) => api.delete('/profile/account', { data: { password } }),
+  deleteAccount: (password) => api.post(
+    `/profile/delete-account?password=${encodeURIComponent(password)}`,
+    { password, confirm_password: password },
+    { headers: { 'x-confirmation-password': password } }
+  ),
 };
 
 export default api;

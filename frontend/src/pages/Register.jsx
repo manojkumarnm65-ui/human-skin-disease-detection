@@ -14,10 +14,12 @@ import {
   KeyRound,
   RotateCcw,
   Sparkles,
-  CheckCircle2
+  CheckCircle2,
+  Settings
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/api';
+import SmtpSettingsModal from '../components/SmtpSettingsModal';
 
 const Register = () => {
   const { verifyRegistrationOtp } = useAuth();
@@ -25,6 +27,7 @@ const Register = () => {
 
   // Multi-step: 1 = Registration details, 2 = Enter OTP code
   const [step, setStep] = useState(1);
+  const [showSmtpModal, setShowSmtpModal] = useState(false);
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -36,13 +39,23 @@ const Register = () => {
   // OTP Verification States
   const [otp, setOtp] = useState('');
   const [otpPreview, setOtpPreview] = useState('');
-  const [countdown, setCountdown] = useState(600); // 10 minutes
+  const [countdown, setCountdown] = useState(30); // 30 seconds resend timer
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Countdown timer for registration OTP
+  // Password complexity checks
+  const passwordChecks = {
+    length: password.length >= 8,
+    upper: /[A-Z]/.test(password),
+    lower: /[a-z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[^A-Za-z0-9]/.test(password),
+  };
+  const passedCriteriaCount = Object.values(passwordChecks).filter(Boolean).length;
+
+  // Countdown timer for registration OTP (30 seconds)
   useEffect(() => {
     let timer;
     if (step === 2 && countdown > 0) {
@@ -71,8 +84,24 @@ const Register = () => {
       setErrorMsg('Please enter a valid email address.');
       return;
     }
-    if (password.length < 6) {
-      setErrorMsg('Password must be at least 6 characters long.');
+    if (!passwordChecks.length) {
+      setErrorMsg('Password must be at least 8 characters long.');
+      return;
+    }
+    if (!passwordChecks.upper) {
+      setErrorMsg('Password must contain at least one uppercase letter (A-Z).');
+      return;
+    }
+    if (!passwordChecks.lower) {
+      setErrorMsg('Password must contain at least one lowercase letter (a-z).');
+      return;
+    }
+    if (!passwordChecks.number) {
+      setErrorMsg('Password must contain at least one number (0-9).');
+      return;
+    }
+    if (!passwordChecks.special) {
+      setErrorMsg('Password must contain at least one special character (!@#$%^&* etc.).');
       return;
     }
     if (password !== confirmPassword) {
@@ -93,12 +122,14 @@ const Register = () => {
         confirm_password: confirmPassword,
       });
 
-      setSuccessMsg(res.data.message || 'Verification OTP dispatched!');
+      setSuccessMsg(res.data.message || `Verification OTP has been sent to ${email.trim()}.`);
       if (res.data.otp_preview) {
         setOtpPreview(res.data.otp_preview);
+      } else {
+        setOtpPreview('');
       }
       setStep(2);
-      setCountdown(600);
+      setCountdown(30); // 30 seconds resend timer
     } catch (err) {
       const msg = err.response?.data?.error || 'Failed to dispatch verification code. Please check your email.';
       setErrorMsg(msg);
@@ -134,8 +165,9 @@ const Register = () => {
     }
   };
 
-  // Resend OTP
+  // Resend OTP (30s cooldown)
   const handleResendOtp = async () => {
+    if (countdown > 0) return;
     setErrorMsg('');
     setLoading(true);
     try {
@@ -145,11 +177,13 @@ const Register = () => {
         password,
         confirm_password: confirmPassword,
       });
-      setSuccessMsg('A new verification code has been dispatched.');
+      setSuccessMsg(res.data.message || `A fresh verification code was sent to ${email.trim()}.`);
       if (res.data.otp_preview) {
         setOtpPreview(res.data.otp_preview);
+      } else {
+        setOtpPreview('');
       }
-      setCountdown(600);
+      setCountdown(30); // 30 seconds resend timer
     } catch (err) {
       setErrorMsg('Failed to resend code. Please wait a moment and retry.');
     } finally {
@@ -164,7 +198,7 @@ const Register = () => {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '40px 24px',
-      background: 'radial-gradient(ellipse at 70% 50%, rgba(8, 123, 255, 0.15) 0%, rgba(2, 11, 28, 0) 65%), var(--bg-primary)',
+      background: 'radial-gradient(ellipse at 70% 50%, rgba(1, 75, 170, 0.45) 0%, rgba(1, 26, 68, 0) 65%), var(--bg-primary)',
       fontFamily: "'Times New Roman', Times, serif"
     }}>
       <div style={{
@@ -176,12 +210,12 @@ const Register = () => {
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-xl)',
         overflow: 'hidden',
-        boxShadow: 'var(--shadow-lg), 0 0 40px rgba(8, 201, 245, 0.15)',
+        boxShadow: 'var(--shadow-lg), 0 0 40px rgba(1, 75, 170, 0.35)',
       }}>
         {/* Left Value Prop */}
         <div style={{
           padding: '48px 40px',
-          background: 'linear-gradient(135deg, rgba(8, 123, 255, 0.2) 0%, rgba(2, 11, 28, 0.8) 100%)',
+          background: 'linear-gradient(135deg, rgba(1, 75, 170, 0.45) 0%, rgba(1, 26, 68, 0.9) 100%)',
           borderRight: '1px solid var(--border-color)',
           display: 'flex',
           flexDirection: 'column',
@@ -246,6 +280,42 @@ const Register = () => {
 
         {/* Right Form Card */}
         <div style={{ padding: '48px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          {/* SMTP Quick Setup Action Bar */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: 'rgba(1, 75, 170, 0.15)',
+            border: '1px solid rgba(1, 75, 170, 0.4)',
+            borderRadius: 'var(--radius-sm)',
+            padding: '8px 14px',
+            marginBottom: '18px',
+            fontSize: '0.82rem',
+          }}>
+            <span style={{ color: '#CBD5E1', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Mail size={14} color="#08C9F5" />
+              <span>Real Email Delivery:</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowSmtpModal(true)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--cyan-accent)',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '0.8rem'
+              }}
+            >
+              <Settings size={13} />
+              <span>Configure Sender Gmail / SMTP</span>
+            </button>
+          </div>
+
           <div style={{ marginBottom: '24px' }}>
             <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#FFFFFF', marginBottom: '6px' }}>
               {step === 1 ? 'Sign Up' : 'Verify Email (OTP)'}
@@ -326,7 +396,7 @@ const Register = () => {
                     type={showPassword ? 'text' : 'password'}
                     className="form-input"
                     style={{ paddingLeft: '42px', paddingRight: '42px', fontSize: '0.92rem' }}
-                    placeholder="Minimum 6 characters"
+                    placeholder="Min 8 chars, Aa, 123, !@#"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -348,6 +418,65 @@ const Register = () => {
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+
+                {/* Password Strength & Requirements Checklist */}
+                {password.length > 0 && (
+                  <div style={{
+                    marginTop: '8px',
+                    padding: '10px 14px',
+                    background: 'rgba(1, 30, 75, 0.85)',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid rgba(1, 75, 170, 0.55)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                  }}>
+                    {/* Strength meter bar */}
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem', marginBottom: '4px' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>Security Strength:</span>
+                        <span style={{
+                          fontWeight: 700,
+                          color: passedCriteriaCount === 5 ? '#10B981' : passedCriteriaCount >= 3 ? 'var(--cyan-accent)' : '#EF4444'
+                        }}>
+                          {passedCriteriaCount === 5 ? 'Very Strong' : passedCriteriaCount >= 3 ? 'Moderate' : 'Weak'}
+                        </span>
+                      </div>
+                      <div style={{ height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+                        <div style={{
+                          height: '100%',
+                          width: `${(passedCriteriaCount / 5) * 100}%`,
+                          background: passedCriteriaCount === 5 ? '#10B981' : 'linear-gradient(90deg, #014BAA 0%, #08C9F5 100%)',
+                          transition: 'width 0.3s ease',
+                        }} />
+                      </div>
+                    </div>
+
+                    {/* Criteria checklist */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '0.75rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: passwordChecks.length ? '#10B981' : 'var(--text-muted)' }}>
+                        <CheckCircle2 size={13} color={passwordChecks.length ? '#10B981' : '#64748B'} />
+                        <span>8+ Characters</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: passwordChecks.upper ? '#10B981' : 'var(--text-muted)' }}>
+                        <CheckCircle2 size={13} color={passwordChecks.upper ? '#10B981' : '#64748B'} />
+                        <span>Uppercase (A-Z)</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: passwordChecks.lower ? '#10B981' : 'var(--text-muted)' }}>
+                        <CheckCircle2 size={13} color={passwordChecks.lower ? '#10B981' : '#64748B'} />
+                        <span>Lowercase (a-z)</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: passwordChecks.number ? '#10B981' : 'var(--text-muted)' }}>
+                        <CheckCircle2 size={13} color={passwordChecks.number ? '#10B981' : '#64748B'} />
+                        <span>Number (0-9)</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: passwordChecks.special ? '#10B981' : 'var(--text-muted)', gridColumn: 'span 2' }}>
+                        <CheckCircle2 size={13} color={passwordChecks.special ? '#10B981' : '#64748B'} />
+                        <span>Special Symbol (!@#$%^&*...)</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -403,40 +532,52 @@ const Register = () => {
              ===================================================================== */}
           {step === 2 && (
             <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              {/* Quick Demonstration Simulation Banner */}
-              {otpPreview && (
+              {/* Real Email Dispatch Status Banner */}
+              <div
+                className="animate-fade-in"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(8, 123, 255, 0.12) 0%, rgba(8, 201, 245, 0.08) 100%)',
+                  border: '1px solid rgba(8, 201, 245, 0.4)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '14px 18px',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '12px',
+                  boxShadow: '0 0 20px rgba(8, 201, 245, 0.2)',
+                }}
+              >
                 <div
-                  onClick={() => setOtp(otpPreview)}
+                  className="animate-float"
                   style={{
-                    background: 'rgba(8, 201, 245, 0.12)',
-                    border: '1px dashed var(--cyan-accent)',
-                    borderRadius: 'var(--radius-md)',
-                    padding: '12px 16px',
-                    color: 'var(--cyan-accent)',
-                    fontSize: '0.88rem',
-                    cursor: 'pointer',
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    background: 'rgba(8, 201, 245, 0.2)',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
-                    boxShadow: '0 0 15px rgba(8, 201, 245, 0.25)',
+                    justifyContent: 'center',
+                    color: 'var(--cyan-accent)',
+                    flexShrink: 0,
+                    marginTop: '2px',
                   }}
-                  title="Click to auto-fill verification code"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Sparkles size={16} />
-                    <span>Demo OTP Code: <strong>{otpPreview}</strong></span>
-                  </div>
-                  <span style={{ fontSize: '0.78rem', textDecoration: 'underline', fontWeight: 700 }}>
-                    Click to Auto-fill
-                  </span>
+                  <Mail size={18} />
                 </div>
-              )}
+                <div>
+                  <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF', marginBottom: '4px' }}>
+                    Verification Code Sent via Email
+                  </div>
+                  <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                    A 6-digit one-time password (OTP) was dispatched to <strong style={{ color: 'var(--cyan-accent)' }}>{email}</strong>. Please check your inbox and spam folder.
+                  </div>
+                </div>
+              </div>
 
               <div style={{
-                background: 'rgba(2, 11, 28, 0.6)',
+                background: 'rgba(1, 30, 75, 0.85)',
                 padding: '12px 16px',
                 borderRadius: 'var(--radius-sm)',
-                border: '1px solid rgba(8, 201, 245, 0.2)',
+                border: '1px solid rgba(1, 75, 170, 0.55)',
                 fontSize: '0.85rem',
                 color: 'var(--text-secondary)',
                 display: 'flex',
@@ -444,10 +585,53 @@ const Register = () => {
                 alignItems: 'center'
               }}>
                 <span>Code sent to: <strong>{email}</strong></span>
-                <span style={{ color: countdown < 60 ? '#EF4444' : 'var(--cyan-accent)', fontWeight: 700 }}>
-                  {formatTimer(countdown)}
+                <span style={{ 
+                  color: countdown <= 10 ? '#EF4444' : 'var(--cyan-accent)', 
+                  fontWeight: 800,
+                  background: 'rgba(1, 75, 170, 0.2)',
+                  padding: '4px 10px',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(8, 201, 245, 0.3)'
+                }}>
+                  ⏱️ {formatTimer(countdown)}
                 </span>
               </div>
+
+              {otpPreview && (
+                <div style={{
+                  background: 'rgba(8, 201, 245, 0.12)',
+                  border: '1px dashed var(--cyan-accent)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '10px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  fontSize: '0.84rem'
+                }}>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)' }}>Demo / Testing Code: </span>
+                    <strong style={{ color: 'var(--cyan-accent)', letterSpacing: '2px', fontSize: '1.05rem', marginLeft: '6px' }}>
+                      {otpPreview}
+                    </strong>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setOtp(otpPreview)}
+                    style={{
+                      background: 'rgba(8, 201, 245, 0.2)',
+                      border: '1px solid var(--cyan-accent)',
+                      color: '#FFFFFF',
+                      borderRadius: '4px',
+                      padding: '4px 10px',
+                      cursor: 'pointer',
+                      fontSize: '0.78rem',
+                      fontWeight: 700
+                    }}
+                  >
+                    Auto-Fill
+                  </button>
+                </div>
+              )}
 
               <div>
                 <label className="form-label" style={{ fontSize: '0.9rem', marginBottom: '8px', display: 'block' }}>
@@ -484,21 +668,32 @@ const Register = () => {
                   padding: '14px',
                   fontSize: '1.05rem',
                   fontWeight: 800,
-                  background: 'linear-gradient(135deg, #10B981, #08C9F5)',
-                  boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)',
+                  background: 'linear-gradient(135deg, #014BAA, #08C9F5)',
+                  boxShadow: '0 0 20px rgba(1, 75, 170, 0.4)',
                 }}
               >
                 {loading ? 'Verifying...' : 'Verify OTP & Complete Registration'}
               </button>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', fontSize: '0.85rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', fontSize: '0.85rem' }}>
                 <button
                   type="button"
                   onClick={handleResendOtp}
-                  style={{ background: 'transparent', border: 'none', color: 'var(--cyan-accent)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  disabled={countdown > 0 || loading}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: countdown > 0 ? 'var(--text-muted)' : 'var(--cyan-accent)',
+                    cursor: countdown > 0 ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontWeight: 600,
+                    opacity: countdown > 0 ? 0.6 : 1
+                  }}
                 >
                   <RotateCcw size={14} />
-                  <span>Resend OTP</span>
+                  <span>{countdown > 0 ? `Resend OTP in ${countdown}s` : 'Resend OTP Code'}</span>
                 </button>
 
                 <button
@@ -508,6 +703,17 @@ const Register = () => {
                 >
                   <ArrowLeft size={14} />
                   <span>Edit Details</span>
+                </button>
+              </div>
+
+              <div style={{ textAlign: 'center', marginTop: '14px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                Email not arriving in your inbox?{' '}
+                <button
+                  type="button"
+                  onClick={() => setShowSmtpModal(true)}
+                  style={{ background: 'transparent', border: 'none', color: '#08C9F5', cursor: 'pointer', fontWeight: 700, textDecoration: 'underline' }}
+                >
+                  Connect your Gmail / SMTP sender
                 </button>
               </div>
             </form>
@@ -521,6 +727,12 @@ const Register = () => {
           </div>
         </div>
       </div>
+
+      {/* Real SMTP Delivery Setup Modal */}
+      <SmtpSettingsModal
+        isOpen={showSmtpModal}
+        onClose={() => setShowSmtpModal(false)}
+      />
     </div>
   );
 };

@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from extensions import db
 from models.user import User
 from models.prediction import Prediction
+from .auth import validate_password_strength
 
 profile_bp = Blueprint('profile', __name__, url_prefix='/api/profile')
 
@@ -73,8 +74,9 @@ def change_password():
     if not user.check_password(current_password):
         return jsonify({'error': 'Current password is incorrect'}), 400
 
-    if len(new_password) < 6:
-        return jsonify({'error': 'New password must be at least 6 characters long'}), 400
+    is_valid, msg = validate_password_strength(new_password)
+    if not is_valid:
+        return jsonify({'error': msg}), 400
 
     if confirm_new_password and new_password != confirm_new_password:
         return jsonify({'error': 'New passwords do not match'}), 400
@@ -87,18 +89,49 @@ def change_password():
         db.session.rollback()
         return jsonify({'error': f'Failed to update password: {str(e)}'}), 500
 
-@profile_bp.route('/account', methods=['DELETE'])
+@profile_bp.route('/account', methods=['DELETE', 'POST'])
+@profile_bp.route('/delete-account', methods=['POST'])
 @jwt_required()
 def delete_account():
     user_id = int(get_jwt_identity())
     user = db.session.get(User, user_id)
     if not user:
-        return jsonify({'error': 'User not found'}), 404
+        return jsonify({'error': 'User account not found.'}), 404
 
-    data = request.get_json() or {}
-    password = data.get('password') or ''
+    # Comprehensive extraction from JSON, form-data, query parameters, headers, or raw payload
+    data = request.get_json(force=True, silent=True) or {}
+    if not isinstance(data, dict):
+        data = {}
+
+    password = (
+        data.get('password') or
+        data.get('confirm_password') or
+        data.get('confirmation_password') or
+        data.get('current_password') or
+        request.form.get('password') or
+        request.form.get('confirm_password') or
+        request.args.get('password') or
+        request.args.get('confirm_password') or
+        request.headers.get('x-confirmation-password') or
+        request.headers.get('x-password') or
+        ''
+    )
+
+    if not password and request.data:
+        try:
+            raw_text = request.data.decode('utf-8', errors='ignore').strip()
+            if raw_text and not raw_text.startswith('{'):
+                password = raw_text
+        except Exception:
+            pass
+
+    password = str(password).strip()
+
+    if not password:
+        return jsonify({'error': 'Password confirmation is required. Please enter your current account password to proceed.'}), 400
+
     if not user.check_password(password):
-        return jsonify({'error': 'Password confirmation is required to delete your account'}), 400
+        return jsonify({'error': 'Incorrect password entered. Please enter your valid current account password.'}), 400
 
     try:
         db.session.delete(user)

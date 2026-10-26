@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Activity,
@@ -15,13 +15,18 @@ import {
   HeartPulse,
   Send,
   Lock,
-  Layers
+  Layers,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = 'Human Skin Disease Detection';
+  }, []);
 
   // Contact form state
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -196,7 +201,7 @@ const Home = () => {
         display: 'flex',
         alignItems: 'center',
         padding: '60px 24px',
-        background: 'radial-gradient(ellipse at 70% 30%, rgba(8, 123, 255, 0.18) 0%, rgba(2, 11, 28, 0) 70%), var(--bg-primary)',
+        background: 'radial-gradient(ellipse at 70% 30%, rgba(1, 75, 170, 0.45) 0%, rgba(1, 26, 68, 0) 70%), var(--bg-primary)',
       }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%' }}>
           <div style={{
@@ -208,35 +213,38 @@ const Home = () => {
             {/* Left Content Column */}
             <div>
               {/* Badge */}
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '6px 16px',
-                background: 'rgba(8, 201, 245, 0.1)',
-                border: '1px solid rgba(8, 201, 245, 0.3)',
-                borderRadius: 'var(--radius-full)',
-                color: 'var(--cyan-accent)',
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                letterSpacing: '0.08em',
-                marginBottom: '20px',
-              }}>
+              <div
+                className="animate-float"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '6px 16px',
+                  background: 'rgba(8, 201, 245, 0.12)',
+                  border: '1px solid rgba(8, 201, 245, 0.35)',
+                  borderRadius: 'var(--radius-full)',
+                  color: 'var(--cyan-accent)',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  marginBottom: '20px',
+                  boxShadow: '0 0 15px rgba(8, 201, 245, 0.25)',
+                }}>
                 <Zap size={14} />
-                <span>AI POWERED SKIN ANALYSIS</span>
+                <span>AI POWERED DERMATOLOGY</span>
               </div>
 
               {/* Main Heading */}
               <h1 style={{
-                fontSize: 'clamp(2.3rem, 4.2vw, 3.8rem)',
+                fontSize: 'clamp(2.5rem, 4.8vw, 4.2rem)',
                 fontWeight: 800,
                 lineHeight: 1.15,
                 letterSpacing: '-0.02em',
                 marginBottom: '20px',
               }}>
-                Human Skin Disease Detection Using{' '}
-                <span className="cyan-gradient-text" style={{ textShadow: '0 0 35px rgba(8, 201, 245, 0.35)' }}>
-                  Deep Learning
+                Human Skin Disease{' '}
+                <span className="cyan-gradient-text" style={{ textShadow: '0 0 40px rgba(8, 201, 245, 0.5)' }}>
+                  Detection
                 </span>
               </h1>
 
@@ -354,7 +362,7 @@ const Home = () => {
                   <div style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'radial-gradient(circle, transparent 40%, rgba(2, 11, 28, 0.5) 100%)',
+                    background: 'radial-gradient(circle, transparent 40%, rgba(1, 30, 75, 0.5) 100%)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -371,7 +379,7 @@ const Home = () => {
 
                 {/* Floating Prediction Result Card (Demonstration Preview) */}
                 <div
-                  className="card-glass"
+                  className="card-glass animate-float"
                   style={{
                     position: 'absolute',
                     bottom: '-30px',
@@ -380,7 +388,7 @@ const Home = () => {
                     padding: '16px',
                     borderRadius: 'var(--radius-md)',
                     border: '1px solid rgba(8, 201, 245, 0.4)',
-                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(8, 201, 245, 0.3)',
+                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6), 0 0 25px rgba(8, 201, 245, 0.35)',
                     zIndex: 20,
                   }}
                 >
@@ -575,11 +583,13 @@ const Home = () => {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
             {supportedConditions.map((cond, idx) => (
-              <div key={idx} className="card-glass" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+              <div key={idx} className="card-glass interactive-card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ height: '160px', overflow: 'hidden', position: 'relative' }}>
                   <img
                     src={cond.img}
                     alt={cond.name}
+                    className="lesion-img-hover"
+                    onError={(e) => { e.target.src = '/samples/sample_melanoma.jpg'; }}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                   <div style={{ position: 'absolute', top: '12px', right: '12px' }}>
@@ -801,8 +811,9 @@ const Home = () => {
           FOOTER
          ========================================================================= */}
       <footer style={{
-        background: '#010612',
-        borderTop: '1px solid rgba(8, 201, 245, 0.15)',
+        background: 'linear-gradient(180deg, #011E48 0%, #01122C 100%)',
+        borderTop: '2px solid #014BAA',
+        boxShadow: '0 -4px 25px rgba(1, 75, 170, 0.35)',
         padding: '50px 24px 30px',
       }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>

@@ -582,6 +582,143 @@ def seed_initial_diseases():
                 "American Academy of Dermatology (AAD) - Alopecia Areata Diagnosis & Treatments",
                 "Lancet Dermatology - Pathogenesis and Therapies for Alopecia Areata"
             ])
+        },
+        {
+            "name": "Contact Dermatitis",
+            "slug": "contact-dermatitis",
+            "category": "Allergic / Irritant Dermatosis",
+            "severity": "Manageable / Acute Inflammatory",
+            "description": "Contact dermatitis is an acute or subacute inflammatory skin reaction triggered either by direct chemical damage to the epidermal barrier (irritant contact dermatitis, ~80%) or by a type IV delayed-hypersensitivity cell-mediated immune reaction (allergic contact dermatitis, ~20%). It frequently manifests in sharp, demarcated geometric patterns corresponding to contact with offending substances.",
+            "symptoms_json": json.dumps([
+                "Sharply circumscribed pruritic erythematous macules, papules, and edematous plaques",
+                "Clustered micro-vesicles that weep, ooze, and form yellowish serous crusts",
+                "Geometric or linear distribution matching external contact objects (watch straps, jewelry, plants)",
+                "Intense localized pruritus, burning, stinging, or cutaneous tenderness",
+                "Secondary lichenification and painful skin fissuring in chronic occupational exposure"
+            ]),
+            "risk_factors_json": json.dumps([
+                "Occupational exposure to industrial solvents, detergents, wet cement, or machining oils",
+                "Sensitization to nickel alloys, cobalt, gold, or chromates in costume jewelry and belt buckles",
+                "Topical exposure to urushiol from poison ivy, oak, or sumac",
+                "Sensitization to topical fragrance mixes, balsam of Peru, formaldehyde, or parabens",
+                "Pre-existing atopic diathesis causing compromised stratum corneum barrier function"
+            ]),
+            "care_guidance_json": json.dumps([
+                "Identify and strictly eliminate contact with all confirmed allergens and occupational irritants",
+                "Apply cool tap-water or Domeboro astringent compresses to soothe weeping acute vesicular eruptions",
+                "Administer mid-to-high potency topical corticosteroids (triamcinolone 0.1% or clobetasol 0.05%) for 1-2 weeks",
+                "Liberal application of ceramide-dominant barrier repair ointments and emollient creams",
+                "Wear non-latex nitrile protective gloves when handling domestic cleaning agents or chemical compounds"
+            ]),
+            "when_to_see_doctor": "Consult a dermatologist if the rash covers more than 20% of your body surface, involves eyelids or genitals, develops signs of secondary bacterial impetiginization (purulent drainage, warmth, fever), or fails to improve within 7 days of allergen avoidance.",
+            "medical_references_json": json.dumps([
+                "American Contact Dermatitis Society (ACDS) - Clinical Guidelines & Contact Allergen Core Series",
+                "British Association of Dermatologists (BAD) - Guidelines for the Management of Contact Dermatitis",
+                "Journal of the American Academy of Dermatology (JAAD) - Diagnostic Evaluation of Allergic Contact Dermatitis"
+            ])
+        },
+        {
+            "name": "Seborrheic Dermatitis",
+            "slug": "seborrheic-dermatitis",
+            "category": "Sebaceous Inflammatory Dermatosis",
+            "severity": "Manageable / Chronic",
+            "description": "Seborrheic dermatitis is a chronic, relapsing superficial inflammatory disorder localized to cutaneous zones with high concentrations of active sebaceous glands (scalp, eyebrows, nasolabial folds, retroauricular sulci, and central chest). It arises from an abnormal inflammatory host response to Malassezia globosa and restricta yeasts metabolizing sebum triglycerides into irritating free fatty acids.",
+            "symptoms_json": json.dumps([
+                "Greasy, yellowish, adherent bran-like or thick hyperkeratotic scales overlying erythematous patches",
+                "Pronounced scalp flaking ranging from mild diffuse pityriasis capitis (dandruff) to thick coronal plaques",
+                "Bilateral symmetric erythema with powdery scaling along the nasolabial creases and medial eyebrows",
+                "Retroauricular fissuring, scaling, and persistent retro-auricular erythema",
+                "Mild-to-moderate pruritus aggravated by environmental heat, sweating, and emotional distress"
+            ]),
+            "risk_factors_json": json.dumps([
+                "High endogenous sebum production during post-pubertal adolescence and adulthood",
+                "Excessive cutaneous colonization by Malassezia yeast species",
+                "Neurological conditions: Parkinson's disease, traumatic brain injury, and stroke",
+                "Immune dysregulation, chronic physiological exhaustion, and HIV infection",
+                "Cold, dry winter climates and sudden emotional stress flares"
+            ]),
+            "care_guidance_json": json.dumps([
+                "Wash scalp and facial areas with therapeutic antifungal shampoos (Ketoconazole 2%, Ciclopirox 1%, or Zinc Pyrithione 1%)",
+                "Allow shampoo lather to remain in contact with scalp/skin for 5-10 minutes prior to thorough rinsing",
+                "Apply topical Ketoconazole 2% cream twice daily to facial erythema for 2-4 weeks",
+                "Short-term application of low-potency topical hydrocortisone 1% cream for severe acute inflammation",
+                "Maintain gentle facial cleansing routines; avoid heavy occlusive mineral-oil based cosmetics"
+            ]),
+            "when_to_see_doctor": "Seek clinical evaluation if flaking resists 4 weeks of OTC anti-dandruff shampoos, erythema spreads across extensive facial or trunk regions, or bacterial superinfection with purulence or severe soreness develops.",
+            "medical_references_json": json.dumps([
+                "American Academy of Dermatology (AAD) - Seborrheic Dermatitis Management Protocols",
+                "Cochrane Database of Systematic Reviews - Topical Antifungals for Seborrhoeic Dermatitis",
+                "European Academy of Dermatology and Venereology (EADV) - Consensus Guidelines on Seborrheic Dermatitis"
+            ])
+        },
+        {
+            "name": "Folliculitis",
+            "slug": "folliculitis",
+            "category": "Infectious Follicular Disorder",
+            "severity": "Infectious / Treatable",
+            "description": "Folliculitis is an acute or chronic inflammation of one or more hair follicles, most commonly triggered by bacterial infection with Staphylococcus aureus, fungal colonization with Malassezia (Pityrosporum folliculitis), or chemical/mechanical friction (shaving, tight synthetic clothing). It presents as small tender dome-shaped pustules centered precisely on hair shafts.",
+            "symptoms_json": json.dumps([
+                "Discrete, 1-3 mm erythematous follicular papules and pustules pierced centrally by a hair follicle",
+                "Surrounding zone of active inflammatory erythema with central purulent core",
+                "Localized cutaneous tenderness, pruritus, or mild burning sensation",
+                "Crusting and excoriation following pustule rupture",
+                "Predilection for beard region (pseudofolliculitis barbae), scalp, upper trunk, buttocks, and thighs"
+            ]),
+            "risk_factors_json": json.dumps([
+                "Frequent close razor shaving, depilatory waxing, or friction from tight occlusive sportswear",
+                "Soaking in poorly chlorinated hot tubs or heated whirlpools (causing Pseudomonas aeruginosa 'hot tub folliculitis')",
+                "Prolonged systemic antibiotic therapy for acne, leading to Gram-negative folliculitis",
+                "Immune compromise, poorly controlled diabetes mellitus, or chronic topical steroid use",
+                "Hyperhidrosis (excessive perspiration) combined with warm, humid environmental conditions"
+            ]),
+            "care_guidance_json": json.dumps([
+                "Apply warm saline or dilute antibacterial compresses for 15-20 minutes 3-4 times daily to promote spontaneous drainage",
+                "Cleanse affected skin with antiseptic washes: Benzoyl peroxide 5-10% or Chlorhexidine gluconate 4%",
+                "Topical antibiotic application (Mupirocin 2% ointment or Clindamycin 1% gel) for bacterial folliculitis",
+                "Topical or oral antifungals (Fluconazole, Ketoconazole) if Pityrosporum / Malassezia folliculitis is diagnosed",
+                "Adopt razor-free depilatory methods, electric clippers, or shave exclusively in the direction of natural hair growth"
+            ]),
+            "when_to_see_doctor": "Consult a healthcare provider if lesions rapidly expand into painful deep-seated furuncles (boils) or coalescent carbuncles, if systemic fever or regional lymphadenopathy develops, or if pustules fail to resolve after 10 days of topical care.",
+            "medical_references_json": json.dumps([
+                "Infectious Diseases Society of America (IDSA) - Practice Guidelines for Skin and Soft Tissue Infections",
+                "American Academy of Dermatology (AAD) - Folliculitis: Diagnosis and Treatment Overview",
+                "New England Journal of Medicine (NEJM) - Superficial and Deep Follicular Pyodermas"
+            ])
+        },
+        {
+            "name": "Lichen Planus",
+            "slug": "lichen-planus",
+            "category": "Autoimmune Mucocutaneous Dermatosis",
+            "severity": "Manageable / Inflammatory",
+            "description": "Lichen planus is a chronic autoimmune, mucocutaneous disorder mediated by cytotoxic CD8+ T lymphocytes targeting basal keratinocytes along the dermo-epidermal junction. It classically presents on the skin with the hallmark '6 Ps': Purple, Polygonal, Pruritic, Planar (flat-topped), Papules, and Plaques, characteristically crisscrossed by fine white reticular lines known as Wickham's striae.",
+            "symptoms_json": json.dumps([
+                "Violaceous (purple/magenta), flat-topped, polygonal papules with sharp angulated borders",
+                "Delicate microscopic lace-like white lines across the papule surface (Wickham's striae)",
+                "Intense, persistent pruritus that is refractory to standard oral antihistamines",
+                "Koebner isomorphic response: development of new characteristic papules along lines of cutaneous trauma/scratching",
+                "Oral mucosal involvement in ~50% of patients with reticular white plaques along bilateral buccal mucosa",
+                "Nail dystrophy including longitudinal ridging, thinning, and characteristic pterygium formation"
+            ]),
+            "risk_factors_json": json.dumps([
+                "Strong clinical association with Hepatitis C virus (HCV) infection",
+                "Drug-induced lichenoid eruptions triggered by beta-blockers, ACE inhibitors, antimalarials, and NSAIDs",
+                "Dental amalgam restorations provoking contact lichenoid mucosal reactions",
+                "Genetic predisposition associated with HLA-DR1, HLA-DQ1 alleles",
+                "Severe emotional stress and autoimmune comorbidities (vitiligo, ulcerative colitis)"
+            ]),
+            "care_guidance_json": json.dumps([
+                "High-potency topical corticosteroids (Clobetasol propionate 0.05% ointment or Betamethasone dipropionate 0.05%) under occlusion",
+                "Intralesional triamcinolone acetonide injections for hypertrophic, recalcitrant violaceous plaques",
+                "Oral Acitretin retinoid therapy or systemic corticosteroids for extensive, severe generalized eruptions",
+                "Narrowband UVB (NB-UVB) phototherapy administered 2-3 times weekly",
+                "Screening for Hepatitis C viral serology and evaluation of oral cavity to exclude erosive oral lichen planus"
+            ]),
+            "when_to_see_doctor": "Consult a dermatologist for confirmation by skin punch biopsy. Mucosal lichen planus (oral or genital) requires ongoing monitoring due to a small recognized risk (~1-2%) of malignant transformation into Squamous Cell Carcinoma.",
+            "medical_references_json": json.dumps([
+                "British Association of Dermatologists (BAD) - Guidelines for the Management of Lichen Planus",
+                "American Academy of Dermatology (AAD) - Lichen Planus Clinical Signs, Biopsy & Therapy",
+                "Journal of Autoimmunity - Immunopathogenesis and Targeted Biologics in Lichen Planus"
+            ])
         }
     ]
 

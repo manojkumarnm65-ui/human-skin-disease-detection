@@ -174,7 +174,9 @@ def create_samples():
         ("sample_melanoma.jpg", mel_img),
         ("sample_bcc.jpg", bcc_img),
         ("sample_scc.jpg", scc_img),
+        ("sample_squamous_cell_carcinoma.jpg", scc_img),
         ("sample_ak.jpg", ak_img),
+        ("sample_actinic_keratosis.jpg", ak_img),
         ("sample_nevus.jpg", nev_img),
         ("sample_benign_keratosis.jpg", sk_img),
         ("sample_dermatofibroma.jpg", df_img),
@@ -186,9 +188,12 @@ def create_samples():
         ("sample_vitiligo.jpg", vit_img),
         ("sample_tinea.jpg", tin_img),
         ("sample_urticaria.jpg", urt_img),
+        ("sample_urticaria_hives.jpg", urt_img),
         ("sample_shingles.jpg", shn_img),
+        ("sample_shingles_herpes_zoster.jpg", shn_img),
         ("sample_impetigo.jpg", imp_img),
         ("sample_alopecia.jpg", alo_img),
+        ("sample_alopecia_areata.jpg", alo_img),
     ]
 
     for filename, img in samples:

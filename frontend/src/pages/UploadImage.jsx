@@ -19,7 +19,13 @@ import {
   Sun,
   Video,
   VideoOff,
-  Printer
+  Printer,
+  Stethoscope,
+  Pill,
+  Apple,
+  Salad,
+  Check,
+  Ban
 } from 'lucide-react';
 import {
   BarChart,
@@ -33,8 +39,10 @@ import {
 import { predictionService } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ClinicalReportModal from '../components/ClinicalReportModal';
+import { getClinicalGuidance } from '../utils/clinicalGuidance';
+import { useAuth } from '../context/AuthContext';
 
-// All 18 Dermatological Conditions Supported by SkinCare AI
+// All 22 Dermatological Conditions Supported by SkinCare AI
 const sampleImages = [
   { name: 'Melanoma', class: 'Melanoma', path: '/samples/sample_melanoma.jpg' },
   { name: 'Basal Cell Carcinoma', class: 'Basal Cell Carcinoma', path: '/samples/sample_bcc.jpg' },
@@ -54,9 +62,14 @@ const sampleImages = [
   { name: 'Shingles (Herpes Zoster)', class: 'Shingles (Herpes Zoster)', path: '/samples/sample_shingles_herpes_zoster.jpg' },
   { name: 'Impetigo', class: 'Impetigo', path: '/samples/sample_impetigo.jpg' },
   { name: 'Alopecia Areata', class: 'Alopecia Areata', path: '/samples/sample_alopecia_areata.jpg' },
+  { name: 'Contact Dermatitis', class: 'Contact Dermatitis', path: '/samples/sample_contact_dermatitis.jpg' },
+  { name: 'Seborrheic Dermatitis', class: 'Seborrheic Dermatitis', path: '/samples/sample_seborrheic_dermatitis.jpg' },
+  { name: 'Folliculitis', class: 'Folliculitis', path: '/samples/sample_folliculitis.jpg' },
+  { name: 'Lichen Planus', class: 'Lichen Planus', path: '/samples/sample_lichen_planus.jpg' },
 ];
 
 const UploadImage = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
@@ -344,10 +357,10 @@ const UploadImage = () => {
             {/* Mode Switcher Tabs: Live Camera vs File Upload */}
             <div style={{
               display: 'flex',
-              background: 'rgba(2, 11, 28, 0.7)',
+              background: 'rgba(1, 30, 75, 0.85)',
               padding: '4px',
               borderRadius: 'var(--radius-md)',
-              border: '1px solid rgba(8, 201, 245, 0.25)',
+              border: '1px solid rgba(1, 75, 170, 0.5)',
               marginBottom: '20px',
               gap: '6px'
             }}>
@@ -481,8 +494,8 @@ const UploadImage = () => {
                         left: '12px',
                         padding: '4px 10px',
                         borderRadius: 'var(--radius-full)',
-                        background: 'rgba(2, 11, 28, 0.85)',
-                        border: '1px solid rgba(8, 201, 245, 0.3)',
+                        background: 'rgba(1, 35, 90, 0.9)',
+                        border: '1px solid rgba(1, 75, 170, 0.5)',
                         fontSize: '0.74rem',
                         color: 'var(--cyan-accent)',
                         display: 'flex',
@@ -500,8 +513,8 @@ const UploadImage = () => {
                         bottom: '10px',
                         padding: '6px 14px',
                         borderRadius: 'var(--radius-full)',
-                        background: 'rgba(2, 11, 28, 0.85)',
-                        border: '1px solid rgba(8, 201, 245, 0.3)',
+                        background: 'rgba(1, 35, 90, 0.9)',
+                        border: '1px solid rgba(1, 75, 170, 0.5)',
                         fontSize: '0.76rem',
                         color: '#E2E8F0',
                         display: 'flex',
@@ -558,8 +571,8 @@ const UploadImage = () => {
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
                   style={{
-                    border: dragActive ? '2px dashed var(--cyan-accent)' : '2px dashed rgba(8, 201, 245, 0.3)',
-                    background: dragActive ? 'rgba(8, 123, 255, 0.12)' : 'rgba(2, 11, 28, 0.6)',
+                    border: dragActive ? '2px dashed var(--cyan-accent)' : '2px dashed rgba(1, 75, 170, 0.5)',
+                    background: dragActive ? 'rgba(1, 75, 170, 0.25)' : 'rgba(1, 30, 75, 0.8)',
                     borderRadius: 'var(--radius-lg)',
                     padding: '28px 20px',
                     textAlign: 'center',
@@ -634,9 +647,9 @@ const UploadImage = () => {
                         style={{
                           borderRadius: 'var(--radius-sm)',
                           overflow: 'hidden',
-                          border: '1px solid rgba(8, 201, 245, 0.25)',
+                          border: '1px solid rgba(1, 75, 170, 0.45)',
                           cursor: 'pointer',
-                          background: 'rgba(2, 11, 28, 0.8)',
+                          background: 'rgba(1, 30, 75, 0.85)',
                           transition: 'all 0.2s ease',
                           textAlign: 'center',
                         }}
@@ -653,6 +666,7 @@ const UploadImage = () => {
                         <img
                           src={s.path}
                           alt={s.name}
+                          onError={(e) => { e.target.src = '/samples/sample_melanoma.jpg'; }}
                           style={{ width: '100%', height: '42px', objectFit: 'cover' }}
                         />
                         <div style={{
@@ -808,8 +822,8 @@ const UploadImage = () => {
               <div style={{
                 height: '220px',
                 borderRadius: 'var(--radius-lg)',
-                background: 'rgba(2, 11, 28, 0.5)',
-                border: '1px dashed rgba(255, 255, 255, 0.12)',
+                background: 'rgba(1, 30, 75, 0.8)',
+                border: '1px dashed rgba(1, 75, 170, 0.45)',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -859,7 +873,7 @@ const UploadImage = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* Result Header Badge & Score */}
                 <div style={{
-                  background: 'rgba(2, 11, 28, 0.8)',
+                  background: 'rgba(1, 35, 90, 0.9)',
                   border: '1px solid var(--border-color)',
                   borderRadius: 'var(--radius-md)',
                   padding: '16px 20px',
@@ -888,11 +902,11 @@ const UploadImage = () => {
 
                 {/* EXTRA FEATURE: PROMINENT CLINICAL REPORT GENERATION CTA */}
                 <div style={{
-                  padding: '16px',
+                  padding: '16px 20px',
                   borderRadius: 'var(--radius-md)',
-                  background: 'linear-gradient(135deg, rgba(8, 123, 255, 0.15), rgba(8, 201, 245, 0.2))',
-                  border: '1px solid var(--cyan-accent)',
-                  boxShadow: '0 0 20px rgba(8, 201, 245, 0.2)',
+                  background: 'linear-gradient(135deg, rgba(1, 75, 170, 0.4) 0%, rgba(8, 201, 245, 0.2) 100%)',
+                  border: '2px solid #014BAA',
+                  boxShadow: '0 0 25px rgba(1, 75, 170, 0.4)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -900,12 +914,12 @@ const UploadImage = () => {
                   gap: '12px',
                 }}>
                   <div>
-                    <div style={{ fontWeight: 800, fontSize: '0.98rem', color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <FileText size={18} color="var(--cyan-accent)" />
-                      <span>Clinical Screening Report Ready</span>
+                    <div style={{ fontWeight: 800, fontSize: '1.02rem', color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <FileText size={20} color="#08C9F5" />
+                      <span>Clinical Screening Report Generated</span>
                     </div>
-                    <div style={{ fontSize: '0.78rem', color: '#CBD5E1', marginTop: '2px' }}>
-                      Official medical laboratory dossier with probabilities, ABCDE metrics, & print/PDF export.
+                    <div style={{ fontSize: '0.8rem', color: '#CBD5E1', marginTop: '3px' }}>
+                      Complete laboratory dossier containing disease etiology, recommended treatments, food remedies & PDF export.
                     </div>
                   </div>
 
@@ -914,23 +928,23 @@ const UploadImage = () => {
                     onClick={() => setShowReportModal(true)}
                     className="btn-primary"
                     style={{
-                      padding: '10px 18px',
-                      fontSize: '0.88rem',
-                      fontWeight: 700,
-                      background: 'linear-gradient(135deg, #08C9F5, #087BFF)',
-                      boxShadow: '0 0 15px rgba(8, 201, 245, 0.5)',
+                      padding: '10px 20px',
+                      fontSize: '0.9rem',
+                      fontWeight: 800,
+                      background: 'linear-gradient(135deg, #014BAA, #08C9F5)',
+                      boxShadow: '0 0 20px rgba(1, 75, 170, 0.6)',
                       whiteSpace: 'nowrap',
                     }}
                   >
                     <Printer size={16} />
-                    <span>Generate Clinical Report</span>
+                    <span>View / Print Full Report</span>
                   </button>
                 </div>
 
                 {/* Probability Distribution Chart (Top 6 Classes) */}
                 <div style={{
-                  background: 'rgba(2, 11, 28, 0.6)',
-                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  background: 'rgba(1, 30, 75, 0.85)',
+                  border: '1px solid rgba(1, 75, 170, 0.45)',
                   borderRadius: 'var(--radius-md)',
                   padding: '16px',
                 }}>
@@ -951,7 +965,7 @@ const UploadImage = () => {
                         <Tooltip
                           contentStyle={{
                             background: 'var(--bg-card)',
-                            borderColor: 'var(--cyan-accent)',
+                            borderColor: '#014BAA',
                             borderRadius: '6px',
                             fontSize: '0.8rem',
                             fontFamily: "'Times New Roman', Times, serif"
@@ -961,7 +975,7 @@ const UploadImage = () => {
                           {getProbabilityData().slice(0, 6).map((entry, index) => (
                             <Cell
                               key={`cell-${index}`}
-                              fill={entry.name === 'Melanoma' || entry.name === 'Basal Cell Carcinoma' || entry.name === 'Squamous Cell Carcinoma' ? '#EF4444' : entry.name === analysisResult.prediction.predicted_class ? 'var(--cyan-accent)' : '#087BFF'}
+                              fill={entry.name === 'Melanoma' || entry.name === 'Basal Cell Carcinoma' || entry.name === 'Squamous Cell Carcinoma' ? '#EF4444' : entry.name === analysisResult.prediction.predicted_class ? '#08C9F5' : '#014BAA'}
                             />
                           ))}
                         </Bar>
@@ -970,28 +984,90 @@ const UploadImage = () => {
                   </div>
                 </div>
 
+                {/* Post-Analysis Clinical Guidance: Recommended Treatment & Food Remedies Cards */}
+                {(() => {
+                  const guidance = getClinicalGuidance(analysisResult.prediction.predicted_class);
+                  return (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
+                      {/* Recommended Treatment Card */}
+                      <div style={{
+                        background: 'rgba(1, 75, 170, 0.12)',
+                        border: '1px solid rgba(1, 75, 170, 0.4)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: '16px',
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                          <Stethoscope size={18} color="#08C9F5" />
+                          <h4 style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0, color: '#08C9F5' }}>
+                            Recommended Treatment
+                          </h4>
+                        </div>
+                        <ul style={{ paddingLeft: '16px', margin: 0, fontSize: '0.8rem', color: '#CBD5E1', lineHeight: 1.5 }}>
+                          {guidance.recommendedTreatments.clinicalProcedures.slice(0, 2).map((item, idx) => (
+                            <li key={idx} style={{ marginBottom: '4px' }}>{item}</li>
+                          ))}
+                          <li style={{ color: '#93C5FD' }}>
+                            <strong>Topical: </strong>
+                            {guidance.recommendedTreatments.prescriptionTopicals[0] || 'See full clinical report'}
+                          </li>
+                        </ul>
+                      </div>
+
+                      {/* Food Remedies Card */}
+                      <div style={{
+                        background: 'rgba(16, 185, 129, 0.08)',
+                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: '16px',
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                          <Salad size={18} color="#10B981" />
+                          <h4 style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0, color: '#10B981' }}>
+                            Food Remedies & Diet
+                          </h4>
+                        </div>
+                        <div style={{ fontSize: '0.78rem', marginBottom: '6px', color: '#A7F3D0' }}>
+                          <strong>Foods to Eat: </strong>
+                          {guidance.foodRemedies.beneficialFoods.slice(0, 2).join('; ')}
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: '#FCA5A5' }}>
+                          <strong>Foods to Avoid: </strong>
+                          {guidance.foodRemedies.foodsToAvoid.slice(0, 2).join('; ')}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Educational disease snippet */}
                 {analysisResult.disease_info && (
                   <div style={{
                     padding: '14px 16px',
                     borderRadius: 'var(--radius-md)',
-                    background: 'rgba(8, 123, 255, 0.08)',
-                    border: '1px solid rgba(8, 123, 255, 0.2)',
+                    background: 'rgba(1, 75, 170, 0.08)',
+                    border: '1px solid rgba(1, 75, 170, 0.25)',
                     fontSize: '0.84rem',
                     color: 'var(--text-secondary)',
                     lineHeight: 1.5,
                   }}>
-                    <div style={{ fontWeight: 600, color: '#FFFFFF', marginBottom: '4px' }}>
-                      About {analysisResult.disease_info.name}:
+                    <div style={{ fontWeight: 700, color: '#FFFFFF', marginBottom: '4px' }}>
+                      Pathology Profile — {analysisResult.disease_info.name}:
                     </div>
-                    {analysisResult.disease_info.description.slice(0, 180)}...
-                    <div style={{ marginTop: '8px' }}>
+                    {analysisResult.disease_info.description?.slice(0, 200)}...
+                    <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Link
                         to="/diseases"
-                        style={{ color: 'var(--cyan-accent)', textDecoration: 'none', fontWeight: 600, fontSize: '0.8rem' }}
+                        style={{ color: 'var(--cyan-accent)', textDecoration: 'none', fontWeight: 600, fontSize: '0.82rem' }}
                       >
                         View Full Medical Overview & Guidance →
                       </Link>
+                      <button
+                        type="button"
+                        onClick={() => setShowReportModal(true)}
+                        style={{ background: 'transparent', border: 'none', color: '#10B981', cursor: 'pointer', fontWeight: 700, fontSize: '0.82rem' }}
+                      >
+                        Open Clinical Dossier ↗
+                      </button>
                     </div>
                   </div>
                 )}
@@ -1047,6 +1123,7 @@ const UploadImage = () => {
             image_url: previewUrl,
             timestamp: new Date().toISOString(),
           }}
+          patientName={user?.full_name}
           onClose={() => setShowReportModal(false)}
         />
       )}

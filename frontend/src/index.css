@@ -1,28 +1,33 @@
 :root {
-  --bg-primary: #020B1C;
-  --bg-secondary: #06172D;
-  --bg-card: #071B33;
-  --bg-card-hover: #0B2545;
-  --bg-glass: rgba(7, 27, 51, 0.75);
+  --bg-primary: #011E48;
+  --bg-secondary: #012A66;
+  --bg-card: #01357D;
+  --bg-card-hover: #01439E;
+  --bg-glass: rgba(1, 53, 125, 0.85);
   
-  --electric-blue: #087BFF;
-  --cyan-accent: #08C9F5;
-  --cyan-glow: rgba(8, 201, 245, 0.35);
-  --blue-glow: rgba(8, 123, 255, 0.35);
+  --royal-blue: #014BAA;
+  --royal-blue-dark: #012A66;
+  --royal-blue-deep: #01183A;
+  --royal-blue-light: #1D6AE5;
+  --royal-blue-glow: rgba(1, 75, 170, 0.55);
+  --electric-blue: #014BAA;
+  --cyan-accent: #38BDF8;
+  --cyan-glow: rgba(56, 189, 248, 0.4);
+  --blue-glow: rgba(1, 75, 170, 0.55);
 
   --text-primary: #FFFFFF;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-  --text-cyan: #08C9F5;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --text-cyan: #38BDF8;
 
-  --border-color: rgba(8, 201, 245, 0.18);
-  --border-hover: rgba(8, 201, 245, 0.45);
-  --border-card: rgba(255, 255, 255, 0.08);
+  --border-color: rgba(1, 75, 170, 0.48);
+  --border-hover: rgba(56, 189, 248, 0.7);
+  --border-card: rgba(255, 255, 255, 0.12);
 
   --color-success: #10B981;
   --color-warning: #F59E0B;
   --color-danger: #EF4444;
-  --color-info: #08C9F5;
+  --color-info: #38BDF8;
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -33,8 +38,8 @@
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.6);
-  --shadow-glow: 0 0 25px rgba(8, 201, 245, 0.25);
-  --shadow-glow-strong: 0 0 35px rgba(8, 201, 245, 0.45);
+  --shadow-glow: 0 0 25px rgba(1, 75, 170, 0.45);
+  --shadow-glow-strong: 0 0 35px rgba(1, 75, 170, 0.65);
 
   /* Primary Typography set to Times New Roman as requested */
   --font-main: 'Times New Roman', Times, Georgia, serif;
@@ -53,7 +58,7 @@ html {
 
 body {
   font-family: var(--font-main);
-  background-color: var(--bg-primary);
+  background: radial-gradient(circle at 50% 10%, #014BAA 0%, #012B6B 42%, #011738 100%) fixed;
   color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.6;
@@ -68,14 +73,14 @@ body {
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+  background: #011E48;
 }
 ::-webkit-scrollbar-thumb {
-  background: #0E3360;
+  background: #014BAA;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--cyan-accent);
+  background: #1D6AE5;
 }
 
 /* Typography utilities with Times New Roman */
@@ -91,7 +96,13 @@ button, input, select, textarea {
 }
 
 .cyan-gradient-text {
-  background: linear-gradient(135deg, #08C9F5 0%, #087BFF 100%);
+  background: linear-gradient(135deg, #08C9F5 0%, #38BDF8 40%, #014BAA 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.royal-gradient-text {
+  background: linear-gradient(135deg, #60A5FA 0%, #014BAA 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -122,24 +133,24 @@ button, input, select, textarea {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: linear-gradient(135deg, var(--electric-blue) 0%, var(--cyan-accent) 100%);
+  background: linear-gradient(135deg, #014BAA 0%, #0B63D6 55%, #08C9F5 100%);
   color: #FFFFFF;
   font-family: var(--font-main);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 1rem;
   padding: 12px 24px;
   border-radius: var(--radius-md);
-  border: none;
+  border: 1px solid rgba(8, 201, 245, 0.3);
   cursor: pointer;
   transition: all 0.25s ease;
-  box-shadow: 0 4px 15px rgba(8, 201, 245, 0.3);
+  box-shadow: 0 4px 18px rgba(1, 75, 170, 0.45), 0 0 10px rgba(8, 201, 245, 0.2);
   text-decoration: none;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(8, 201, 245, 0.5);
-  filter: brightness(1.1);
+  box-shadow: 0 6px 25px rgba(1, 75, 170, 0.65), 0 0 20px rgba(8, 201, 245, 0.4);
+  filter: brightness(1.12);
 }
 
 .btn-primary:disabled {
@@ -154,24 +165,25 @@ button, input, select, textarea {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: rgba(8, 123, 255, 0.12);
-  color: var(--cyan-accent);
+  background: rgba(1, 75, 170, 0.18);
+  color: #38BDF8;
   font-family: var(--font-main);
   font-weight: 600;
   font-size: 1rem;
   padding: 12px 24px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(1, 75, 170, 0.45);
   cursor: pointer;
   transition: all 0.25s ease;
   text-decoration: none;
 }
 
 .btn-secondary:hover {
-  background: rgba(8, 123, 255, 0.22);
+  background: rgba(1, 75, 170, 0.32);
   border-color: var(--cyan-accent);
   color: #FFFFFF;
   transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(1, 75, 170, 0.4);
 }
 
 .btn-outline {
@@ -236,19 +248,22 @@ button, input, select, textarea {
   border: 1px solid rgba(245, 158, 11, 0.35);
 }
 
-/* Scanning & HUD Animations */
+/* Scanning, Radar & HUD Animations */
 @keyframes laserScan {
   0% {
-    top: 5%;
-    opacity: 0.8;
+    top: 2%;
+    opacity: 0.85;
+    box-shadow: 0 0 15px #08C9F5, 0 0 25px #087BFF;
   }
   50% {
-    top: 90%;
+    top: 94%;
     opacity: 1;
+    box-shadow: 0 0 25px #08C9F5, 0 0 35px #087BFF;
   }
   100% {
-    top: 5%;
-    opacity: 0.8;
+    top: 2%;
+    opacity: 0.85;
+    box-shadow: 0 0 15px #08C9F5, 0 0 25px #087BFF;
   }
 }
 
@@ -263,11 +278,98 @@ button, input, select, textarea {
 
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(8, 201, 245, 0.3);
+    box-shadow: 0 0 18px rgba(8, 201, 245, 0.3);
+    border-color: rgba(8, 201, 245, 0.3);
   }
   50% {
-    box-shadow: 0 0 40px rgba(8, 201, 245, 0.6);
+    box-shadow: 0 0 35px rgba(8, 201, 245, 0.65), 0 0 15px rgba(8, 123, 255, 0.5);
+    border-color: rgba(8, 201, 245, 0.8);
   }
+}
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes radarSweep {
+  0% {
+    transform: rotate(0deg);
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(360deg);
+    opacity: 0.7;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Animation Utility Classes */
+.animate-float {
+  animation: floatSlow 4s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fadeInScale 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-radar {
+  animation: radarSweep 3s linear infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, rgba(8, 201, 245, 0.05) 0%, rgba(8, 201, 245, 0.25) 50%, rgba(8, 201, 245, 0.05) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite linear;
+}
+
+.interactive-card {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.interactive-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(8, 201, 245, 0.5) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(8, 201, 245, 0.3) !important;
+}
+
+.lesion-img-hover {
+  transition: transform 0.4s ease, filter 0.4s ease;
+}
+
+.lesion-img-hover:hover {
+  transform: scale(1.06);
+  filter: brightness(1.1) contrast(1.05);
 }
 
 /* Inputs & Form Controls */
@@ -288,8 +390,8 @@ button, input, select, textarea {
 .form-input {
   width: 100%;
   padding: 12px 16px;
-  background: rgba(2, 11, 28, 0.7);
-  border: 1px solid rgba(8, 201, 245, 0.2);
+  background: rgba(1, 35, 88, 0.75);
+  border: 1px solid rgba(1, 75, 170, 0.55);
   border-radius: var(--radius-md);
   color: #FFFFFF;
   font-size: 1rem;
@@ -300,8 +402,8 @@ button, input, select, textarea {
 .form-input:focus {
   outline: none;
   border-color: var(--cyan-accent);
-  box-shadow: 0 0 15px rgba(8, 201, 245, 0.3);
-  background: rgba(2, 11, 28, 0.9);
+  box-shadow: 0 0 18px rgba(1, 75, 170, 0.55);
+  background: rgba(1, 45, 112, 0.95);
 }
 
 .form-input::placeholder {
@@ -326,47 +428,122 @@ button, input, select, textarea {
 
 /* Print-optimized clinical report styles */
 @media print {
+  /* Hide application chrome and interaction buttons */
+  header, nav, .top-nav, .desktop-nav, .mobile-toggle, .sidebar, .no-print, button, input, select, textarea {
+    display: none !important;
+  }
+
+  /* Reset document to clean white canvas */
   html, body {
     background: #FFFFFF !important;
-    color: #000000 !important;
-    font-family: 'Times New Roman', Times, serif !important;
+    color: #111827 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
-  body * {
-    visibility: hidden;
-  }
-  #printable-clinical-report, #printable-clinical-report * {
-    visibility: visible;
-  }
-  #printable-clinical-report {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    background: #FFFFFF !important;
-    color: #000000 !important;
-    font-family: 'Times New Roman', Times, serif !important;
-    padding: 30px;
-    margin: 0;
-    box-shadow: none !important;
-    border: none !important;
-  }
-  #printable-clinical-report h1,
-  #printable-clinical-report h2,
-  #printable-clinical-report h3,
-  #printable-clinical-report h4,
-  #printable-clinical-report p,
-  #printable-clinical-report span,
-  #printable-clinical-report div,
-  #printable-clinical-report td,
-  #printable-clinical-report th {
-    color: #000000 !important;
-    font-family: 'Times New Roman', Times, serif !important;
-  }
-  #printable-clinical-report div[style*="background"] {
+
+  /* Expand modal overlay from fixed viewport to normal printable document flow */
+  .modal-overlay,
+  div[style*="fixed"],
+  div[style*="backdrop-filter"] {
+    position: static !important;
+    inset: auto !important;
     background: transparent !important;
-    border-color: #333333 !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    display: block !important;
+    box-shadow: none !important;
   }
-  .no-print {
-    display: none !important;
+
+  /* Unclip card container */
+  .card-glass {
+    background: #FFFFFF !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Printable Clinical Report Container */
+  #printable-clinical-report {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #FFFFFF !important;
+    color: #111827 !important;
+    padding: 10mm 15mm !important;
+    margin: 0 !important;
+  }
+
+  #printable-clinical-report * {
+    color: #111827 !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Ensure report sections and cards render with crisp border contrast */
+  #printable-clinical-report div[style*="border"],
+  #printable-clinical-report div[style*="border-color"],
+  #printable-clinical-report div[style*="borderBottom"],
+  #printable-clinical-report div[style*="borderTop"] {
+    border-color: #94A3B8 !important;
+    background: #F8FAFC !important;
+  }
+
+  #printable-clinical-report table {
+    width: 100% !important;
+    border: 1px solid #94A3B8 !important;
+    border-collapse: collapse !important;
+  }
+
+  #printable-clinical-report th {
+    background: #E2E8F0 !important;
+    color: #0F172A !important;
+    font-weight: 700 !important;
+    border: 1px solid #94A3B8 !important;
+    padding: 6px 10px !important;
+  }
+
+  #printable-clinical-report td {
+    border: 1px solid #CBD5E1 !important;
+    padding: 6px 10px !important;
+    color: #1E293B !important;
+  }
+
+  #printable-clinical-report img {
+    max-width: 220px !important;
+    max-height: 200px !important;
+    object-fit: contain !important;
+    border: 1px solid #94A3B8 !important;
+    background: #F1F5F9 !important;
+    display: block !important;
+  }
+
+  /* Avoid awkward page breaks in the middle of clinical cards */
+  #printable-clinical-report > div,
+  #printable-clinical-report table,
+  #printable-clinical-report tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 }

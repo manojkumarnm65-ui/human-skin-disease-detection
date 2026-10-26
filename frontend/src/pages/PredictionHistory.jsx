@@ -19,6 +19,7 @@ import {
 import { predictionService } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ClinicalReportModal from '../components/ClinicalReportModal';
+import { useAuth } from '../context/AuthContext';
 
 const ALL_CONDITIONS = [
   'Melanoma',
@@ -39,9 +40,14 @@ const ALL_CONDITIONS = [
   'Shingles (Herpes Zoster)',
   'Impetigo',
   'Alopecia Areata',
+  'Contact Dermatitis',
+  'Seborrheic Dermatitis',
+  'Folliculitis',
+  'Lichen Planus',
 ];
 
 const PredictionHistory = () => {
+  const { user } = useAuth();
   const [predictions, setPredictions] = useState([]);
   const [pagination, setPagination] = useState({ current_page: 1, total_pages: 1, total_records: 0 });
   const [loading, setLoading] = useState(true);
@@ -216,7 +222,7 @@ const PredictionHistory = () => {
               <thead>
                 <tr style={{
                   borderBottom: '1px solid var(--border-color)',
-                  background: 'rgba(2, 11, 28, 0.8)',
+                  background: 'rgba(1, 35, 90, 0.95)',
                   color: 'var(--text-secondary)',
                   fontSize: '0.8rem',
                   textTransform: 'uppercase',
@@ -370,7 +376,7 @@ const PredictionHistory = () => {
             justifyContent: 'space-between',
             padding: '16px 24px',
             borderTop: '1px solid var(--border-color)',
-            background: 'rgba(2, 11, 28, 0.6)',
+            background: 'rgba(1, 30, 75, 0.85)',
           }}>
             <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>
               Page {pagination.current_page} of {pagination.total_pages}
@@ -429,8 +435,8 @@ const PredictionHistory = () => {
               height: '240px',
               borderRadius: 'var(--radius-md)',
               overflow: 'hidden',
-              background: '#010612',
-              border: '2px solid rgba(8, 201, 245, 0.3)',
+              background: '#011A42',
+              border: '2px solid rgba(1, 75, 170, 0.55)',
               marginBottom: '20px',
               display: 'flex',
               alignItems: 'center',
@@ -449,21 +455,21 @@ const PredictionHistory = () => {
 
             {/* Diagnostic Details Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '20px' }}>
-              <div style={{ padding: '12px', background: 'rgba(2, 11, 28, 0.6)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+              <div style={{ padding: '12px', background: 'rgba(1, 30, 75, 0.85)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Classified Condition</div>
                 <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#FFFFFF', marginTop: '4px' }}>
                   {selectedPrediction.predicted_class}
                 </div>
               </div>
 
-              <div style={{ padding: '12px', background: 'rgba(2, 11, 28, 0.6)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+              <div style={{ padding: '12px', background: 'rgba(1, 30, 75, 0.85)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Confidence Score</div>
                 <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--cyan-accent)', marginTop: '4px' }}>
                   {selectedPrediction.confidence}%
                 </div>
               </div>
 
-              <div style={{ padding: '12px', background: 'rgba(2, 11, 28, 0.6)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+              <div style={{ padding: '12px', background: 'rgba(1, 30, 75, 0.85)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Severity Level</div>
                 <div style={{ marginTop: '4px' }}>
                   <span className={`badge ${selectedPrediction.predicted_class === 'Melanoma' ? 'badge-concerning' : 'badge-benign'}`}>
@@ -472,7 +478,7 @@ const PredictionHistory = () => {
                 </div>
               </div>
 
-              <div style={{ padding: '12px', background: 'rgba(2, 11, 28, 0.6)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+              <div style={{ padding: '12px', background: 'rgba(1, 30, 75, 0.85)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Recorded Timestamp</div>
                 <div style={{ fontSize: '0.85rem', color: '#CBD5E1', marginTop: '6px' }}>
                   {formatLocalTimestamp(selectedPrediction.created_at)}
@@ -560,6 +566,7 @@ const PredictionHistory = () => {
               evolution: 'Baseline scan established',
             },
           }}
+          patientName={user?.full_name}
           onClose={() => setReportModalData(null)}
         />
       )}

@@ -69,7 +69,7 @@ const Login = () => {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '40px 24px',
-      background: 'radial-gradient(ellipse at 30% 50%, rgba(8, 123, 255, 0.15) 0%, rgba(2, 11, 28, 0) 65%), var(--bg-primary)',
+      background: 'radial-gradient(ellipse at 30% 50%, rgba(1, 75, 170, 0.45) 0%, rgba(1, 26, 68, 0) 65%), var(--bg-primary)',
     }}>
       <div style={{
         maxWidth: '1080px',
@@ -80,12 +80,12 @@ const Login = () => {
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-xl)',
         overflow: 'hidden',
-        boxShadow: 'var(--shadow-lg), 0 0 40px rgba(8, 201, 245, 0.15)',
+        boxShadow: 'var(--shadow-lg), 0 0 40px rgba(1, 75, 170, 0.35)',
       }}>
         {/* Left: Medical AI Graphic & Value Prop (Matching Reference 3) */}
         <div style={{
           padding: '48px 40px',
-          background: 'linear-gradient(135deg, rgba(8, 123, 255, 0.2) 0%, rgba(2, 11, 28, 0.8) 100%)',
+          background: 'linear-gradient(135deg, rgba(1, 75, 170, 0.45) 0%, rgba(1, 26, 68, 0.9) 100%)',
           borderRight: '1px solid var(--border-color)',
           display: 'flex',
           flexDirection: 'column',
@@ -129,8 +129,8 @@ const Login = () => {
               position: 'relative',
               height: '180px',
               borderRadius: 'var(--radius-md)',
-              background: 'rgba(2, 11, 28, 0.7)',
-              border: '1px solid rgba(8, 201, 245, 0.3)',
+              background: 'rgba(1, 30, 75, 0.85)',
+              border: '1px solid rgba(1, 75, 170, 0.55)',
               overflow: 'hidden',
               display: 'flex',
               alignItems: 'center',
@@ -154,7 +154,7 @@ const Login = () => {
               <div style={{
                 position: 'absolute',
                 padding: '6px 14px',
-                background: 'rgba(2, 11, 28, 0.85)',
+                background: 'rgba(1, 40, 100, 0.95)',
                 border: '1px solid var(--cyan-accent)',
                 borderRadius: 'var(--radius-full)',
                 fontSize: '0.75rem',
@@ -411,8 +411,8 @@ const Login = () => {
               Google Sign-In is an optional enterprise integration requiring client credentials in Google Cloud Console.
             </p>
             <div style={{
-              background: 'rgba(2, 11, 28, 0.7)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              background: 'rgba(1, 30, 75, 0.85)',
+              border: '1px solid rgba(1, 75, 170, 0.55)',
               padding: '12px',
               borderRadius: 'var(--radius-sm)',
               fontSize: '0.82rem',

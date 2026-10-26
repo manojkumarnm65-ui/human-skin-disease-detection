@@ -38,6 +38,7 @@ const Settings = () => {
   // Delete account state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState('');
 
@@ -77,16 +78,18 @@ const Settings = () => {
   const handleDeleteAccount = async (e) => {
     e.preventDefault();
     setDeleteError('');
-    if (!deletePassword) {
-      setDeleteError('Please enter your password to confirm account deletion.');
+    const trimmed = deletePassword.trim();
+    if (!trimmed) {
+      setDeleteError('Please enter your current password to confirm account deletion.');
       return;
     }
 
     setDeleteLoading(true);
     try {
-      await profileService.deleteAccount(deletePassword);
+      await profileService.deleteAccount(trimmed);
+      setShowDeleteModal(false);
       logout();
-      navigate('/');
+      navigate('/login');
     } catch (err) {
       setDeleteError(err.response?.data?.error || 'Failed to delete account. Please verify your password.');
     } finally {
@@ -253,8 +256,8 @@ const Settings = () => {
               style={{
                 padding: '16px',
                 borderRadius: 'var(--radius-md)',
-                background: theme === t.id ? 'rgba(8, 123, 255, 0.18)' : 'rgba(2, 11, 28, 0.5)',
-                border: theme === t.id ? '1px solid var(--cyan-accent)' : '1px solid rgba(255, 255, 255, 0.08)',
+                background: theme === t.id ? 'rgba(1, 75, 170, 0.35)' : 'rgba(1, 30, 75, 0.8)',
+                border: theme === t.id ? '1px solid var(--cyan-accent)' : '1px solid rgba(1, 75, 170, 0.45)',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
               }}
@@ -366,14 +369,35 @@ const Settings = () => {
 
             <form onSubmit={handleDeleteAccount}>
               <div className="form-group">
-                <input
-                  type="password"
-                  className="form-input"
-                  placeholder="Enter your current password"
-                  value={deletePassword}
-                  onChange={(e) => setDeletePassword(e.target.value)}
-                  required
-                />
+                <label className="form-label" style={{ fontSize: '0.85rem' }}>Current Account Password</label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showDeletePassword ? 'text' : 'password'}
+                    className="form-input"
+                    placeholder="Enter your current password"
+                    value={deletePassword}
+                    onChange={(e) => setDeletePassword(e.target.value)}
+                    style={{ paddingRight: '44px' }}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowDeletePassword(!showDeletePassword)}
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--text-muted)',
+                      cursor: 'pointer',
+                    }}
+                    title={showDeletePassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showDeletePassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '20px' }}>

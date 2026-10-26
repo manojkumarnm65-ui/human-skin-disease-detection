@@ -68,6 +68,7 @@ def analyze_image():
             'prediction': prediction.to_dict(),
             'quality_assessment': quality,
             'disease_info': disease_info,
+            'abcde_assessment': result.get('abcde_assessment', {}),
             'explanation': result.get('explanation', ''),
             'medical_disclaimer': (
                 "IMPORTANT MEDICAL NOTICE: This analysis is an educational AI demonstration and research tool, "

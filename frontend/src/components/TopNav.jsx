@@ -64,9 +64,10 @@ const TopNav = ({ toggleSidebar }) => {
   return (
     <header style={{
       height: '74px',
-      background: 'rgba(6, 23, 45, 0.85)',
+      background: 'linear-gradient(180deg, rgba(1, 45, 115, 0.96) 0%, rgba(1, 35, 90, 0.94) 100%)',
       backdropFilter: 'blur(16px)',
-      borderBottom: '1px solid var(--border-color)',
+      borderBottom: '2px solid #014BAA',
+      boxShadow: '0 4px 25px rgba(1, 75, 170, 0.45)',
       padding: '0 24px',
       display: 'flex',
       alignItems: 'center',
@@ -108,8 +109,8 @@ const TopNav = ({ toggleSidebar }) => {
             style={{
               width: '100%',
               padding: '10px 16px 10px 42px',
-              background: 'rgba(2, 11, 28, 0.6)',
-              border: '1px solid rgba(8, 201, 245, 0.15)',
+              background: 'rgba(1, 30, 75, 0.85)',
+              border: '1px solid rgba(1, 75, 170, 0.45)',
               borderRadius: 'var(--radius-full)',
               color: '#FFFFFF',
               fontSize: '0.9rem',

@@ -214,18 +214,18 @@ const Dashboard = () => {
                 borderRadius: 'var(--radius-md)',
                 padding: '36px 20px',
                 textAlign: 'center',
-                background: 'rgba(2, 11, 28, 0.5)',
+                background: 'rgba(1, 30, 75, 0.8)',
                 cursor: 'pointer',
                 transition: 'all 0.25s ease',
                 marginBottom: '16px',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = 'var(--cyan-accent)';
-                e.currentTarget.style.background = 'rgba(8, 123, 255, 0.08)';
+                e.currentTarget.style.background = 'rgba(1, 75, 170, 0.25)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(8, 201, 245, 0.35)';
-                e.currentTarget.style.background = 'rgba(2, 11, 28, 0.5)';
+                e.currentTarget.style.borderColor = 'rgba(1, 75, 170, 0.45)';
+                e.currentTarget.style.background = 'rgba(1, 30, 75, 0.8)';
               }}
             >
               <UploadCloud size={44} color="var(--cyan-accent)" style={{ margin: '0 auto 12px' }} />
@@ -312,8 +312,8 @@ const Dashboard = () => {
                     justifyContent: 'space-between',
                     padding: '12px',
                     borderRadius: 'var(--radius-md)',
-                    background: 'rgba(2, 11, 28, 0.6)',
-                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                    background: 'rgba(1, 30, 75, 0.8)',
+                    border: '1px solid rgba(1, 75, 170, 0.45)',
                     transition: 'all 0.2s ease',
                   }}
                 >
@@ -470,8 +470,8 @@ const Dashboard = () => {
                   justifyContent: 'space-between',
                   padding: '12px 14px',
                   borderRadius: 'var(--radius-md)',
-                  background: 'rgba(2, 11, 28, 0.5)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  background: 'rgba(1, 30, 75, 0.8)',
+                  border: '1px solid rgba(1, 75, 170, 0.45)',
                 }}
               >
                 <div>
