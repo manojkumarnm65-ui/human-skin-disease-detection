@@ -927,6 +927,344 @@ export const CLINICAL_DISEASE_GUIDANCE = {
       ],
       micronutrientSupport: 'Curcumin phytosome (1000mg daily), Omega-3 Fish Oil (2000mg EPA/DHA), Vitamin D3 with K2, and Zinc l-carnosine.'
     }
+  },
+
+  'Actinic Keratosis': {
+    category: 'Precancerous Keratinocytic Dysplasia',
+    severity: 'Concerning / Precancerous',
+    overview: 'Precancerous epidermal lesion induced by chronic ultraviolet radiation. Characterized by gritty, sandpaper-like scaly macules with a recognized risk of malignant transformation into invasive Squamous Cell Carcinoma.',
+    recommendedTreatments: {
+      clinicalProcedures: [
+        'Cryosurgery with liquid nitrogen (10-15 second freeze-thaw cycles)',
+        'Photodynamic Therapy (PDT with 5-ALA or MAL) for field cancerization',
+        'Curettage and shave biopsy for thick, hyperkeratotic lesions to rule out SCC'
+      ],
+      prescriptionTopicals: [
+        'Topical 5-Fluorouracil (5-FU 5% or 0.5%) cream applied twice daily for 2 to 4 weeks',
+        'Topical Imiquimod (5% or 3.75%) cream stimulating local interferon immune response',
+        'Topical Tirbanibulin 1% ointment applied daily for 5 consecutive days'
+      ],
+      systemicTherapies: [
+        'Oral Nicotinamide (Vitamin B3 500mg twice daily) to enhance UV-damaged DNA repair'
+      ],
+      specialistCriteria: 'Annual full-body dermatological skin cancer surveillance exams.'
+    },
+    foodRemedies: {
+      beneficialFoods: [
+        'Tomato paste and cooked tomatoes rich in bioavailable lycopene (natural UV photoprotectant)',
+        'Carrots, sweet potatoes, and apricots providing beta-carotene and provitamin A carotenoids',
+        'Green tea (epigallocatechin-3-gallate) providing powerful protection against UV oxidative stress'
+      ],
+      foodsToAvoid: [
+        'Deep-fried and charred foods containing toxic advanced glycation end-products (AGEs)',
+        'Excessive alcohol intake which impairs enzymatic cellular DNA repair mechanisms'
+      ],
+      dietaryHabits: [
+        'Incorporate broad-spectrum SPF 50+ mineral sunscreens into the morning routine 365 days a year',
+        'Maintain a carotenoid- and polyphenol-dense whole-food Mediterranean diet'
+      ],
+      micronutrientSupport: 'Oral Nicotinamide (500mg BID), Polypodium leucotomos extract, Astaxanthin, and Vitamin C/E.'
+    }
+  },
+
+  'Contact Dermatitis': {
+    category: 'Acute/Subacute Cutaneous Hypersensitivity',
+    severity: 'Manageable / Acute Inflammatory',
+    overview: 'Inflammatory eczematous skin reaction provoked either by direct toxic chemical cellular disruption (irritant) or a delayed Type IV cell-mediated allergic hypersensitivity (e.g., poison ivy urushiol, nickel, fragrances).',
+    recommendedTreatments: {
+      clinicalProcedures: [
+        'Diagnostic patch testing (T.R.U.E. test panel) to definitively identify causative contact allergens',
+        'Cool dilute aluminum acetate (Domeboro) or saline compresses for 15-20 minutes'
+      ],
+      prescriptionTopicals: [
+        'High-potency topical corticosteroids (Clobetasol propionate or Triamcinolone 0.1% cream)',
+        'Topical Calcineurin Inhibitors (Tacrolimus 0.1% or Pimecrolimus 1%) for thin-skinned facial and eyelid dermatitis'
+      ],
+      systemicTherapies: [
+        'Oral Prednisone taper (40-60mg tapered over 14-21 days) for extensive poison ivy/urushiol reactions'
+      ],
+      specialistCriteria: 'Referral for patch testing if facial or occupational dermatitis fails to resolve within 3 weeks.'
+    },
+    foodRemedies: {
+      beneficialFoods: [
+        'Flaxseeds, chia seeds, and wild cold-water salmon rich in anti-inflammatory alpha-linolenic acid (ALA)',
+        'Quercetin-rich red onions, capers, and apples acting as natural mast-cell membrane stabilizers'
+      ],
+      foodsToAvoid: [
+        'Systemic nickel-rich foods (chocolate, canned foods, cashews, soy) in patch-test confirmed nickel allergy',
+        'High-histamine aged cheeses, cured sausages, wine, and fermented foods during acute flare-ups'
+      ],
+      dietaryHabits: [
+        'Switch strictly to 100% fragrance-free, dye-free hypoallergenic laundry detergents and cleansers'
+      ],
+      micronutrientSupport: 'Quercetin with Bromelain (500mg BID), Vitamin C, Omega-3 Fish Oil, and Zinc picolinate.'
+    }
+  },
+
+  'Seborrheic Dermatitis': {
+    category: 'Chronic Superficial Erythematosquamous Dermatosis',
+    severity: 'Manageable / Chronic',
+    overview: 'Common chronic relapsing dermatitis affecting sebaceous-rich areas (scalp, nasolabial folds, eyebrows, central chest). Driven by Malassezia yeast lipase activity releasing irritating free fatty acids on an altered lipid mantle.',
+    recommendedTreatments: {
+      clinicalProcedures: [
+        'Medicated scalp clarifying treatments and gentle mechanical descaling with mineral oil'
+      ],
+      prescriptionTopicals: [
+        'Topical Ketoconazole 2% shampoo/cream, Ciclopirox 1% shampoo/gel, or Zinc Pyrithione 2%',
+        'Low-potency topical corticosteroids (Desonide 0.05% cream) or topical Tacrolimus 0.1% ointment for facial flares'
+      ],
+      systemicTherapies: [
+        'Short-course oral Itraconazole (200mg daily for 7 days) for severe, generalized, treatment-resistant flares'
+      ],
+      specialistCriteria: 'Dermatology consultation if unresponsive to OTC shampoos or if erythroderma develops.'
+    },
+    foodRemedies: {
+      beneficialFoods: [
+        'Foods rich in B-complex vitamins (nutritional yeast, cage-free pasture eggs, sunflower seeds)',
+        'Fermented unsweetened coconut kefir and probiotic-rich plain yogurt to foster a diverse microbiome'
+      ],
+      foodsToAvoid: [
+        'Refined baker\'s yeasts, refined white flour products, beer, and high-glycemic sugars',
+        'Heavy dairy products high in IGF-1 that overstimulate sebaceous gland lipid production'
+      ],
+      dietaryHabits: [
+        'Adopt daily stress mitigation practices; psychological cortisol surges directly exacerbate seborrhea flares'
+      ],
+      micronutrientSupport: 'Zinc gluconate (30mg daily), Biotin, Vitamin B6, and standardized Oregano oil.'
+    }
+  },
+
+  'Folliculitis': {
+    category: 'Superficial Pyogenic / Fungal Follicular Infection',
+    severity: 'Infectious / Treatable',
+    overview: 'Inflammation or pyogenic infection of one or more hair follicles, most commonly triggered by Staphylococcus aureus colonization, Pseudomonas aeruginosa ("hot tub folliculitis"), or Pityrosporum (Malassezia) yeast.',
+    recommendedTreatments: {
+      clinicalProcedures: [
+        'Microbial bacterial culture and sensitivity testing with Gram stain from active pustule aspirate'
+      ],
+      prescriptionTopicals: [
+        'Topical Clindamycin 1% gel/lotion or Mupirocin 2% ointment applied twice daily for 7-10 days',
+        'Benzoyl peroxide 5-10% cleansing wash or Chlorhexidine gluconate 4% body wash'
+      ],
+      systemicTherapies: [
+        'Oral Cephalexin (500mg QID for 7-10 days) for extensive staphylococcal folliculitis',
+        'Oral Fluconazole (150-200mg weekly for 2-4 weeks) for Malassezia / Pityrosporum folliculitis'
+      ],
+      specialistCriteria: 'Consult if lesions progress into deep painful furuncles/carbuncles or recurrent outbreaks occur.'
+    },
+    foodRemedies: {
+      beneficialFoods: [
+        'Crushed raw garlic (allicin) and raw ginger offering proven broad-spectrum antimicrobial phytonutrients',
+        'Fiber-rich prebiotic asparagus, leeks, and Jerusalem artichokes supporting gut-skin immune integrity'
+      ],
+      foodsToAvoid: [
+        'Whey protein powders and high-glycemic milk shakes that spike insulin and follicular sebum plugging'
+      ],
+      dietaryHabits: [
+        'Shower immediately after vigorous sweating with antibacterial wash; avoid rewearing damp workout clothes'
+      ],
+      micronutrientSupport: 'Zinc picolinate (30mg daily), Vitamin A, Berberine, and Oregano extract.'
+    }
+  },
+
+  'Warts (Verruca)': {
+    category: 'Infectious Viral Cutaneous Proliferation',
+    severity: 'Infectious / Benign HPV',
+    overview: 'Benign intraepidermal epithelial proliferations caused by Human Papillomavirus (HPV) genotypes (1, 2, 4, 27, 57). Characterized by hyperkeratotic, exophytic papules with pathognomonic thrombosed black capillary dots.',
+    recommendedTreatments: {
+      clinicalProcedures: [
+        'Clinical Cryosurgery (liquid nitrogen spray for 10-20 seconds repeated every 2-3 weeks)',
+        'Paring/debridement of hyperkeratotic stratum corneum prior to topical application',
+        'Intralesional Candida antigen injection or pulsed-dye laser for stubborn recalcitrant plantar lesions'
+      ],
+      prescriptionTopicals: [
+        'High-potency Salicylic acid (17% to 40% plaster/gel) applied daily under occlusion',
+        'Topical Imiquimod 5% cream or topical 5-Fluorouracil (5-FU) applied at bedtime'
+      ],
+      systemicTherapies: [
+        'Oral Cimetidine (high-dose 30-40 mg/kg/day) or oral Zinc sulfate (10 mg/kg/day) for extensive pediatric warts'
+      ],
+      specialistCriteria: 'Dermatology consultation for facial, periungual, genital, or treatment-resistant plantar warts.'
+    },
+    foodRemedies: {
+      beneficialFoods: [
+        'Vitamin C-dense citrus fruits, kiwi, bell peppers, and camu camu to boost cytotoxic lymphocyte activity',
+        'Cruciferous vegetables (broccoli, cabbage, Brussels sprouts) containing Indole-3-carbinol (I3C) to inhibit HPV cellular proliferation',
+        'Shiitake and Maitake medicinal mushrooms rich in immune-modulating beta-glucans'
+      ],
+      foodsToAvoid: [
+        'Excess refined sugars and sweetened sodas which temporarily suppress neutrophil phagocytosis and immune response'
+      ],
+      dietaryHabits: [
+        'Never pick, chew, or cut warts with nail clippers; sanitize bathroom floors and wear shower flip-flops in public pools'
+      ],
+      micronutrientSupport: 'Zinc glycinate (30-50mg daily), Vitamin A, Vitamin C with bioflavonoids, and Elderberry extract.'
+    }
+  },
+
+  'Scabies': {
+    category: 'Parasitic Cutaneous Infestation',
+    severity: 'Infectious / Contagious Parasitic',
+    overview: 'Intensely pruritic, highly contagious parasitic infestation of the epidermis by the microscopic human itch mite Sarcoptes scabiei var. hominis. Manifests with hallmark nocturnal pruritus and serpiginous burrows in interdigital web spaces.',
+    recommendedTreatments: {
+      clinicalProcedures: [
+        'Mineral oil skin scraping and microscopic direct visualization of mites, ova, or fecal pellets (scybala)'
+      ],
+      prescriptionTopicals: [
+        'First-line Permethrin 5% cream: Apply from neck to soles of feet, leave on for 8-14 hours, rinse off, repeat in 7-14 days',
+        'Precipitated sulfur 5-10% in petrolatum applied for 3 consecutive nights for infants under 2 months or pregnant women'
+      ],
+      systemicTherapies: [
+        'Oral Ivermectin (200 mcg/kg single oral dose repeated in 7-14 days) for institutional outbreaks or crusted scabies'
+      ],
+      specialistCriteria: 'Mandatory clinical evaluation for simultaneous diagnosis and treatment of ALL household contacts.'
+    },
+    foodRemedies: {
+      beneficialFoods: [
+        'Fresh turmeric with black pepper (curcumin) to quiet intense systemic mast-cell allergic inflammation',
+        'Anti-inflammatory herbal chamomile, peppermint, and rooibos teas to soothe nervous system agitation'
+      ],
+      foodsToAvoid: [
+        'Spicy peppers, hot alcoholic beverages, and boiling hot showers which cause reflex cutaneous vasodilation and aggravate nocturnal itching'
+      ],
+      dietaryHabits: [
+        'Hot water machine wash (60°C/140°F) and hot tumble dry all clothing, sheets, and towels used within the last 4 days'
+      ],
+      micronutrientSupport: 'Oral non-drowsy antihistamines (Cetirizine/Loratadine), Zinc, and soothing topical Calamine lotion.'
+    }
+  },
+
+  "Athlete's Foot (Tinea Pedis)": {
+    category: 'Superficial Dermatophytic Fungal Infection',
+    severity: 'Infectious / Treatable Fungal',
+    overview: 'Prevalent dermatophyte fungal infection of the feet caused primarily by Trichophyton rubrum. Features interdigital white maceration, painful stinging fissures between toe web spaces, or diffuse moccasin-type scaling.',
+    recommendedTreatments: {
+      clinicalProcedures: [
+        'Direct Potassium Hydroxide (KOH) microscopic mount demonstrating fungal septate branching hyphae'
+      ],
+      prescriptionTopicals: [
+        'Topical Terbinafine 1% cream, Clotrimazole 1%, Ketoconazole 2%, or Ciclopirox 0.77% applied twice daily for 2-4 weeks',
+        'Antifungal medicated dusting powders (Tolnaftate or Miconazole) applied inside socks and athletic footwear'
+      ],
+      systemicTherapies: [
+        'Oral Terbinafine (250mg once daily for 2-4 weeks) or Itraconazole (100mg daily) for chronic moccasin-type disease'
+      ],
+      specialistCriteria: 'Urgent evaluation if secondary bacterial cellulitis (expanding redness, heat, lymphangitis) supervenes.'
+    },
+    foodRemedies: {
+      beneficialFoods: [
+        'Crushed fresh garlic (allicin) and extra virgin organic coconut oil (caprylic acid) providing proven natural antifungal properties',
+        'Fermented sour pickles, unsweetened water kefir, and kimchi providing beneficial Lactobacillus species'
+      ],
+      foodsToAvoid: [
+        'Sweet pastries, refined candies, and sweetened syrups that feed fungal overgrowth and promote skin dysbiosis'
+      ],
+      dietaryHabits: [
+        'Dry thoroughly between toes after showering; change socks immediately if damp and wear breathable leather or mesh shoes'
+      ],
+      micronutrientSupport: 'Caprylic acid, Oil of oregano, Grapefruit seed extract, and broad-spectrum Probiotics.'
+    }
+  },
+
+  'Nail Fungus (Onychomycosis)': {
+    category: 'Chronic Onychomycotic Fungal Infection',
+    severity: 'Infectious / Chronic Fungal',
+    overview: 'Chronic, progressive fungal infection of the nail bed and plate caused by dermatophytes (Trichophyton rubrum). Leads to thick, friable, subungually hyperkeratotic yellow-brown onycholytic nail plates.',
+    recommendedTreatments: {
+      clinicalProcedures: [
+        'Nail clipping Periodic Acid-Schiff (PAS) histopathology or fungal PCR culture before systemic therapy',
+        'Mechanical debridement and ultrasonic chemical nail thinning with 40% Urea cream'
+      ],
+      prescriptionTopicals: [
+        'Topical Ciclopirox 8% nail lacquer, Efinaconazole 10% solution, or Tavaborole 5% solution applied daily for 48 weeks'
+      ],
+      systemicTherapies: [
+        'Oral Terbinafine (250mg daily for 12 weeks for toenails, 6 weeks for fingernails) with baseline and mid-treatment liver function monitoring',
+        'Oral Itraconazole pulse therapy (200mg BID for 1 week/month for 3 consecutive months)'
+      ],
+      specialistCriteria: 'Podiatrist or dermatologist consultation, particularly for individuals with diabetes or peripheral neuropathy.'
+    },
+    foodRemedies: {
+      beneficialFoods: [
+        'Collagen peptides and bone broth supplying proline, glycine, and hydroxyproline for healthy keratin matrix synthesis',
+        'Pumpkin seeds and oysters providing dietary zinc necessary for robust nail plate turnover'
+      ],
+      foodsToAvoid: [
+        'Excess refined carbohydrates and bakery goods that spike blood sugar levels and feed fungal colonization'
+      ],
+      dietaryHabits: [
+        'Trim nails straight across without rounding borders; sanitize clippers with isopropyl alcohol after each use'
+      ],
+      micronutrientSupport: 'Biotin (5000 mcg daily), MSM (Methylsulfonylmethane), Silica from Horsetail extract, and Zinc.'
+    }
+  },
+
+  'Cellulitis': {
+    category: 'Acute Spreading Bacterial Dermis & Subcutaneous Infection',
+    severity: 'Concerning / Acute Bacterial Emergency',
+    overview: 'Acute, rapidly advancing bacterial infection of the deep dermis and subcutaneous tissues, most commonly caused by Streptococcus pyogenes or Staphylococcus aureus. Presents with severe warmth, spreading erythema, and tender edema.',
+    recommendedTreatments: {
+      clinicalProcedures: [
+        'Urgent surgical skin marking with indelible ink to monitor whether erythema is advancing or regressing',
+        'Bed rest with affected limb elevated significantly above heart level to reduce painful interstitial edema'
+      ],
+      prescriptionTopicals: [
+        'Topicals are NOT effective for deep subcutaneous cellulitis; systemic antimicrobials are strictly required'
+      ],
+      systemicTherapies: [
+        'First-line oral antibiotics for uncomplicated cellulitis: Cephalexin (500mg QID) or Amoxicillin-Clavulanate for 5-10 days',
+        'Add Doxycycline or Trimethoprim-Sulfamethoxazole (TMP-SMX) if MRSA is suspected',
+        'Intravenous Cefazolin, Ceftriaxone, or Vancomycin for hospitalized patients with systemic toxicity or rapid spread'
+      ],
+      specialistCriteria: 'EMERGENCY: Immediate emergency medical evaluation required if high fever, chills, bullae, or confusion arise.'
+    },
+    foodRemedies: {
+      beneficialFoods: [
+        'Bone broths, pure electrolyte broths, and high-hydration fluids (minimum 3 liters daily) to support renal filtration of bacterial toxins',
+        'High-antioxidant blueberries, pomegranate juice, and leafy green vegetables to accelerate tissue repair'
+      ],
+      foodsToAvoid: [
+        'High-sodium cured snacks and processed chips that exacerbate lower extremity edema and tissue swelling'
+      ],
+      dietaryHabits: [
+        'Strictly complete the entire course of prescribed antibiotics even if symptoms rapidly improve within 48 hours'
+      ],
+      micronutrientSupport: 'High-potency Probiotics (taken 2-3 hours apart from oral antibiotics), Vitamin C, and Zinc.'
+    }
+  },
+
+  'Chickenpox (Varicella)': {
+    category: 'Acute Contagious Systemic Viral Exanthem',
+    severity: 'Infectious / Acute Contagious Viral',
+    overview: 'Acute, highly contagious primary infection caused by Varicella-Zoster Virus (VZV). Characterized by a generalized pruritic exanthem with lesions in all simultaneous stages of development ("dewdrops on a rose petal").',
+    recommendedTreatments: {
+      clinicalProcedures: [
+        'Strict home isolation until every single vesicle has completely crusted over (typically 5 to 7 days from onset)'
+      ],
+      prescriptionTopicals: [
+        'Calamine lotion applied topically to soothe intensely pruritic eruptions',
+        'Cool colloidal oatmeal baths (Aveeno) prepared with lukewarm water 2-3 times daily'
+      ],
+      systemicTherapies: [
+        'Oral Acyclovir (800mg 5 times daily for 5-7 days) or Valacyclovir (1000mg TID) if initiated within 24 hours of rash onset in adolescents/adults',
+        'Acetaminophen for fever control — NEVER administer Aspirin due to the life-threatening risk of Reye\'s Syndrome'
+      ],
+      specialistCriteria: 'Urgent evaluation if shortness of breath, persistent fever, lethargy, confusion, or pregnancy exposure occurs.'
+    },
+    foodRemedies: {
+      beneficialFoods: [
+        'Cooling hydration: coconut water, electrolyte ice pops, chilled watermelon, and unsweetened applesauce',
+        'Lysine-rich foods (free-range chicken, pasture eggs, wild fish) to help counteract viral arginine replication'
+      ],
+      foodsToAvoid: [
+        'Hot, spicy, salty, or citrus-acidic foods that painfully irritate vesicles erupting inside the oral cavity',
+        'Chocolate, peanuts, and gelatin high in L-arginine which fuels herpesvirus replication'
+      ],
+      dietaryHabits: [
+        'Keep fingernails trimmed close and wear clean cotton mitts at night to prevent deep excoriations and scarring'
+      ],
+      micronutrientSupport: 'L-Lysine (1000-2000mg daily), Vitamin C, Vitamin A, Zinc, and oral non-drowsy antihistamines.'
+    }
   }
 };
 
@@ -953,6 +1291,7 @@ export const getClinicalGuidance = (diseaseName = '') => {
   if (lower.includes('bcc') || lower.includes('basal')) return CLINICAL_DISEASE_GUIDANCE['Basal Cell Carcinoma'];
   if (lower.includes('scc') || lower.includes('squamous')) return CLINICAL_DISEASE_GUIDANCE['Squamous Cell Carcinoma'];
   if (lower.includes('mole') || lower.includes('melanocytic')) return CLINICAL_DISEASE_GUIDANCE['Nevus'];
+  if (lower.includes('athlete') || lower.includes('pedis')) return CLINICAL_DISEASE_GUIDANCE["Athlete's Foot (Tinea Pedis)"];
   if (lower.includes('ringworm') || lower.includes('tinea')) return CLINICAL_DISEASE_GUIDANCE['Tinea (Ringworm)'];
   if (lower.includes('hives') || lower.includes('urticaria')) return CLINICAL_DISEASE_GUIDANCE['Urticaria (Hives)'];
   if (lower.includes('shingles') || lower.includes('zoster')) return CLINICAL_DISEASE_GUIDANCE['Shingles (Herpes Zoster)'];
@@ -964,7 +1303,13 @@ export const getClinicalGuidance = (diseaseName = '') => {
   if (lower.includes('seborrheic') || lower.includes('dandruff')) return CLINICAL_DISEASE_GUIDANCE['Seborrheic Dermatitis'];
   if (lower.includes('folliculitis')) return CLINICAL_DISEASE_GUIDANCE['Folliculitis'];
   if (lower.includes('lichen')) return CLINICAL_DISEASE_GUIDANCE['Lichen Planus'];
+  if (lower.includes('wart') || lower.includes('verruca')) return CLINICAL_DISEASE_GUIDANCE['Warts (Verruca)'];
+  if (lower.includes('scabies') || lower.includes('itch mite')) return CLINICAL_DISEASE_GUIDANCE['Scabies'];
+  if (lower.includes('nail') || lower.includes('onychomycosis')) return CLINICAL_DISEASE_GUIDANCE['Nail Fungus (Onychomycosis)'];
+  if (lower.includes('cellulitis')) return CLINICAL_DISEASE_GUIDANCE['Cellulitis'];
+  if (lower.includes('chickenpox') || lower.includes('varicella')) return CLINICAL_DISEASE_GUIDANCE['Chickenpox (Varicella)'];
 
   // Default fallback
   return CLINICAL_DISEASE_GUIDANCE['Melanoma'];
 };
+

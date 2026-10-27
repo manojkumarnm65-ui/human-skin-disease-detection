@@ -51,6 +51,7 @@ export const authService = {
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   getSmtpStatus: () => api.get('/auth/smtp-status'),
   configureSmtp: (data) => api.post('/auth/smtp-config', data),
+  sendTestEmail: (recipientEmail) => api.post('/auth/send-test-email', { recipient_email: recipientEmail }),
 };
 
 // Dashboard Services
@@ -69,6 +70,7 @@ export const predictionService = {
   getHistory: (params = {}) => api.get('/predictions/history', { params }),
   getPredictionDetail: (id) => api.get(`/predictions/${id}`),
   deletePrediction: (id) => api.delete(`/predictions/${id}`),
+  emailReport: (data) => api.post('/predictions/email-report', data),
 };
 
 // Diseases Information Services

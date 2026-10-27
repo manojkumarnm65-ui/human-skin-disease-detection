@@ -7,9 +7,10 @@ class DiseaseInformation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     slug = db.Column(db.String(100), unique=True, nullable=False)
-    category = db.Column(db.String(100), nullable=False)  # Neoplasm, Inflammatory, Autoimmune, etc.
+    category = db.Column(db.String(100), nullable=False)  # Neoplasm, Inflammatory, Autoimmune, Infectious, etc.
     severity = db.Column(db.String(50), nullable=False)  # High Risk / Concerning / Benign / Chronic
     description = db.Column(db.Text, nullable=False)
+    causes_json = db.Column(db.Text, nullable=True)  # Primary biological, microbiological, genetic, and environmental causes
     symptoms_json = db.Column(db.Text, nullable=False)
     risk_factors_json = db.Column(db.Text, nullable=False)
     care_guidance_json = db.Column(db.Text, nullable=False)
@@ -43,8 +44,23 @@ class DiseaseInformation(db.Model):
             'urticaria': '/samples/sample_urticaria_hives.jpg',
             'shingles': '/samples/sample_shingles_herpes_zoster.jpg',
             'impetigo': '/samples/sample_impetigo.jpg',
-            'alopecia-areata': '/samples/sample_alopecia_areata.jpg'
+            'alopecia-areata': '/samples/sample_alopecia_areata.jpg',
+            'contact-dermatitis': '/samples/sample_contact_dermatitis.jpg',
+            'seborrheic-dermatitis': '/samples/sample_seborrheic_dermatitis.jpg',
+            'folliculitis': '/samples/sample_folliculitis.jpg',
+            'lichen-planus': '/samples/sample_lichen_planus.jpg',
+            'warts': '/samples/sample_warts.jpg',
+            'scabies': '/samples/sample_scabies.jpg',
+            'athletes-foot': '/samples/sample_athletes_foot.jpg',
+            'nail-fungus': '/samples/sample_nail_fungus.jpg',
+            'cellulitis': '/samples/sample_cellulitis.jpg',
+            'chickenpox': '/samples/sample_chickenpox.jpg'
         }
+
+        causes = parse_json_field(self.causes_json) if getattr(self, 'causes_json', None) else []
+        if not causes:
+            # Fallback to risk factors if causes not yet populated
+            causes = parse_json_field(self.risk_factors_json)
 
         return {
             'id': self.id,
@@ -53,7 +69,8 @@ class DiseaseInformation(db.Model):
             'category': self.category,
             'severity': self.severity,
             'description': self.description,
-            'image_url': slug_to_image.get(self.slug, f"/samples/sample_{self.slug}.jpg"),
+            'image_url': slug_to_image.get(self.slug, f"/samples/sample_{self.slug.replace('-', '_')}.jpg"),
+            'causes': causes,
             'symptoms': parse_json_field(self.symptoms_json),
             'risk_factors': parse_json_field(self.risk_factors_json),
             'care_guidance': parse_json_field(self.care_guidance_json),

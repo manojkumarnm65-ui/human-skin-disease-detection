@@ -24,10 +24,29 @@ const SmtpSettingsModal = ({ isOpen, onClose, onConfigured }) => {
   const [testRecipient, setTestRecipient] = useState('');
 
   const [loading, setLoading] = useState(false);
+  const [testEmailLoading, setTestEmailLoading] = useState(false);
   const [statusLoading, setStatusLoading] = useState(true);
   const [status, setStatus] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  const handleDirectTestEmail = async () => {
+    setErrorMsg('');
+    setSuccessMsg('');
+    if (!testRecipient.trim()) {
+      setErrorMsg('Please enter a recipient email address below to send the test email.');
+      return;
+    }
+    setTestEmailLoading(true);
+    try {
+      const res = await authService.sendTestEmail(testRecipient.trim());
+      setSuccessMsg(res.data.message || `Test email successfully delivered to ${testRecipient.trim()}!`);
+    } catch (err) {
+      setErrorMsg(err.response?.data?.error || 'Failed to deliver test email. Please check your credentials or recipient address.');
+    } finally {
+      setTestEmailLoading(false);
+    }
+  };
 
   // Fetch current SMTP status on mount
   useEffect(() => {
@@ -335,6 +354,32 @@ const SmtpSettingsModal = ({ isOpen, onClose, onConfigured }) => {
               />
             </div>
 
+            {status?.configured && (
+              <button
+                type="button"
+                onClick={handleDirectTestEmail}
+                disabled={testEmailLoading}
+                className="btn-outline"
+                style={{
+                  width: '100%',
+                  padding: '11px',
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  marginTop: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  borderColor: 'var(--cyan-accent)',
+                  color: 'var(--cyan-accent)',
+                  background: 'rgba(8, 201, 245, 0.08)'
+                }}
+              >
+                <Send size={15} />
+                <span>{testEmailLoading ? 'Sending Test Email...' : 'Send Live Test Email to Recipient'}</span>
+              </button>
+            )}
+
             <button
               type="submit"
               className="btn-primary"
@@ -350,7 +395,7 @@ const SmtpSettingsModal = ({ isOpen, onClose, onConfigured }) => {
               }}
             >
               <Send size={16} />
-              <span>{loading ? 'Verifying & Testing Delivery...' : 'Connect SMTP & Send Test Email'}</span>
+              <span>{loading ? 'Verifying & Testing Delivery...' : 'Save Credentials & Test Connection'}</span>
             </button>
           </form>
         </div>

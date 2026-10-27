@@ -8,6 +8,7 @@ from models.prediction import Prediction
 from models.disease import DiseaseInformation
 from services.image_service import save_and_validate_image
 from services.prediction_service import prediction_service
+from services.email_service import send_prediction_report_email, sanitize_recipient
 
 predictions_bp = Blueprint('predictions', __name__, url_prefix='/api/predictions')
 
@@ -185,3 +186,57 @@ def delete_prediction(pred_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Failed to delete prediction: {str(e)}'}), 500
+
+@predictions_bp.route('/email-report', methods=['POST'])
+@jwt_required()
+def email_prediction_report():
+    """Emails the complete clinical analysis and screening report to a specific recipient email address."""
+    user_id = int(get_jwt_identity())
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'error': 'Unauthorized user'}), 401
+
+    data = request.get_json() or {}
+    pred_id = data.get('prediction_id')
+    recipient_email = sanitize_recipient(data.get('recipient_email') or '')
+    personal_note = (data.get('personal_note') or '').strip()
+
+    if not recipient_email or '@' not in recipient_email:
+        return jsonify({'error': 'Please provide a valid recipient email address'}), 400
+
+    if not pred_id:
+        return jsonify({'error': 'Prediction ID is required'}), 400
+
+    prediction = db.session.get(Prediction, int(pred_id))
+    if not prediction:
+        return jsonify({'error': 'Prediction record not found'}), 404
+
+    # Allow owner or admin
+    if prediction.user_id != user_id and user.role != 'admin':
+        return jsonify({'error': 'Access denied'}), 403
+
+    disease_record = DiseaseInformation.query.filter(
+        DiseaseInformation.name.ilike(f"%{prediction.predicted_class}%")
+    ).first()
+
+    disease_info = disease_record.to_dict() if disease_record else None
+    patient_name = user.full_name or 'Registered User'
+
+    result = send_prediction_report_email(
+        to_email=recipient_email,
+        patient_name=patient_name,
+        prediction_data=prediction.to_dict(),
+        disease_info=disease_info,
+        personal_note=personal_note
+    )
+
+    if result.get('success'):
+        return jsonify({
+            'success': True,
+            'message': f"Diagnostic screening report successfully delivered to {recipient_email}!"
+        }), 200
+    else:
+        return jsonify({
+            'error': f"Failed to deliver report to {recipient_email}: {result.get('error', 'SMTP dispatch error')}"
+        }), 400
+

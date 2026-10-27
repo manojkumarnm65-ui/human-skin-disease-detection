@@ -42,7 +42,7 @@ import ClinicalReportModal from '../components/ClinicalReportModal';
 import { getClinicalGuidance } from '../utils/clinicalGuidance';
 import { useAuth } from '../context/AuthContext';
 
-// All 22 Dermatological Conditions Supported by SkinCare AI
+// All 28 Dermatological Conditions Supported by SkinCare AI
 const sampleImages = [
   { name: 'Melanoma', class: 'Melanoma', path: '/samples/sample_melanoma.jpg' },
   { name: 'Basal Cell Carcinoma', class: 'Basal Cell Carcinoma', path: '/samples/sample_bcc.jpg' },
@@ -66,6 +66,12 @@ const sampleImages = [
   { name: 'Seborrheic Dermatitis', class: 'Seborrheic Dermatitis', path: '/samples/sample_seborrheic_dermatitis.jpg' },
   { name: 'Folliculitis', class: 'Folliculitis', path: '/samples/sample_folliculitis.jpg' },
   { name: 'Lichen Planus', class: 'Lichen Planus', path: '/samples/sample_lichen_planus.jpg' },
+  { name: 'Warts (Verruca)', class: 'Warts (Verruca)', path: '/samples/sample_warts.jpg' },
+  { name: 'Scabies', class: 'Scabies', path: '/samples/sample_scabies.jpg' },
+  { name: "Athlete's Foot", class: "Athlete's Foot (Tinea Pedis)", path: '/samples/sample_athletes_foot.jpg' },
+  { name: 'Nail Fungus', class: 'Nail Fungus (Onychomycosis)', path: '/samples/sample_nail_fungus.jpg' },
+  { name: 'Cellulitis', class: 'Cellulitis', path: '/samples/sample_cellulitis.jpg' },
+  { name: 'Chickenpox', class: 'Chickenpox (Varicella)', path: '/samples/sample_chickenpox.jpg' },
 ];
 
 const UploadImage = () => {

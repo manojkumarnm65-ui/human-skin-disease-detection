@@ -5,6 +5,7 @@ from models.disease import DiseaseInformation
 diseases_bp = Blueprint('diseases', __name__, url_prefix='/api/diseases')
 
 @diseases_bp.route('', methods=['GET'])
+@diseases_bp.route('/', methods=['GET'])
 def get_all_diseases():
     records = DiseaseInformation.query.order_by(DiseaseInformation.id.asc()).all()
     return jsonify({

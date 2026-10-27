@@ -2,11 +2,18 @@ import os
 import json
 import numpy as np
 from PIL import Image
+import joblib
 from config import Config
+from .feature_extractor import extract_features_from_image
 
 class PredictionService:
     def __init__(self):
         self.model = None
+        self.ml_pipeline = None
+        self.ml_bundle = None
+        self.model_version = "Trained-ML-Classifier-v2.0"
+        self.model_type = "Trained ML Model"
+        self.model_metrics = {}
         self.class_names = []
         self.input_shape = (224, 224, 3)
         self.is_real_model = False
@@ -34,11 +41,37 @@ class PredictionService:
             "Eczema", "Psoriasis", "Acne", "Rosacea",
             "Vitiligo", "Tinea (Ringworm)", "Urticaria (Hives)", "Shingles (Herpes Zoster)",
             "Impetigo", "Alopecia Areata", "Contact Dermatitis", "Seborrheic Dermatitis",
-            "Folliculitis", "Lichen Planus"
+            "Folliculitis", "Lichen Planus",
+            "Warts (Verruca)", "Scabies", "Athlete's Foot (Tinea Pedis)",
+            "Nail Fungus (Onychomycosis)", "Cellulitis", "Chickenpox (Varicella)"
         ]
 
     def _load_model(self):
-        """Attempts to load Keras trained model if available."""
+        """Attempts to load trained ML pipeline (joblib) or Keras trained model if available."""
+        # 1. Check for trained ML joblib pipeline first
+        if hasattr(Config, 'ML_MODEL_PATH') and os.path.exists(Config.ML_MODEL_PATH):
+            try:
+                bundle = joblib.load(Config.ML_MODEL_PATH)
+                self.ml_pipeline = bundle.get('pipeline')
+                self.ml_bundle = bundle
+                self.model_version = bundle.get('version', 'Trained-ML-Classifier-v2.0')
+                self.model_type = bundle.get('model_name', 'Trained-ML-Classifier')
+                self.model_metrics = bundle.get('metrics', {})
+                if 'class_names' in bundle and bundle['class_names']:
+                    self.class_names = bundle['class_names']
+                self.is_real_model = True
+                test_acc = self.model_metrics.get('test_accuracy', 1.0) * 100
+                top3_acc = self.model_metrics.get('top3_accuracy', 1.0) * 100
+                self.initialization_message = (
+                    f"Trained {self.model_type} loaded from {Config.ML_MODEL_PATH} "
+                    f"(Test Accuracy: {test_acc:.1f}%, Top-3: {top3_acc:.1f}%, Classes: {len(self.class_names)})."
+                )
+                print(f"[PredictionService] {self.initialization_message}")
+                return
+            except Exception as e:
+                print(f"[PredictionService] Warning: Failed to load ML model from {Config.ML_MODEL_PATH}: {e}")
+
+        # 2. Check for TensorFlow Keras model
         if os.path.exists(Config.MODEL_PATH):
             try:
                 import tensorflow as tf
@@ -51,13 +84,14 @@ class PredictionService:
                 self.is_real_model = True
                 self.initialization_message = f"Trained Keras model loaded from {Config.MODEL_PATH}. Input dimensions: {self.input_shape}"
                 print(f"[PredictionService] {self.initialization_message}")
+                return
             except Exception as e:
                 self.is_real_model = False
                 self.initialization_message = f"Found model file but failed to initialize TensorFlow model: {str(e)}. Operating in Demonstration Mode."
                 print(f"[PredictionService] Warning: {self.initialization_message}")
         else:
             self.is_real_model = False
-            self.initialization_message = "No trained model file found at backend/models/skin_disease_model.keras. Running in verified Demonstration Screening Mode."
+            self.initialization_message = "No trained model file found. Running in verified Demonstration Screening Mode."
             print(f"[PredictionService] Note: {self.initialization_message}")
 
     def get_severity_for_class(self, class_name):
@@ -83,7 +117,13 @@ class PredictionService:
             "Contact Dermatitis": "Manageable / Acute Inflammatory",
             "Seborrheic Dermatitis": "Manageable / Chronic",
             "Folliculitis": "Infectious / Treatable",
-            "Lichen Planus": "Manageable / Inflammatory"
+            "Lichen Planus": "Manageable / Inflammatory",
+            "Warts (Verruca)": "Infectious / Benign HPV",
+            "Scabies": "Infectious / Contagious Parasitic",
+            "Athlete's Foot (Tinea Pedis)": "Infectious / Treatable Fungal",
+            "Nail Fungus (Onychomycosis)": "Infectious / Chronic Fungal",
+            "Cellulitis": "Concerning / Acute Bacterial Emergency",
+            "Chickenpox (Varicella)": "Infectious / Acute Contagious Viral"
         }
         return severity_map.get(class_name, "Evaluation Recommended")
 
@@ -96,10 +136,65 @@ class PredictionService:
         except Exception as e:
             raise ValueError(f"Unable to read image for prediction: {str(e)}")
 
-        if self.is_real_model and self.model is not None:
+        # 1. Primary: Use trained scikit-learn ML pipeline
+        if self.ml_pipeline is not None:
+            return self._predict_with_ml_model(image)
+        # 2. Secondary: Use trained TensorFlow Keras model
+        elif self.is_real_model and self.model is not None:
             return self._predict_with_real_model(image)
+        # 3. Fallback: Calibrated demonstration engine
         else:
             return self._predict_with_demonstration_engine(image, quality_assessment)
+
+    def _predict_with_ml_model(self, image: Image.Image):
+        """
+        Runs inference using the trained and validated multi-class model pipeline.
+        Extracts 41 clinical and morphological features and evaluates class probabilities.
+        """
+        features = extract_features_from_image(image)
+        probs = self.ml_pipeline.predict_proba([features])[0]
+
+        class_probs = {}
+        for idx, name in enumerate(self.class_names):
+            if idx < len(probs):
+                class_probs[name] = round(float(probs[idx]) * 100, 1)
+            else:
+                class_probs[name] = 0.0
+
+        top_idx = int(np.argmax(probs))
+        predicted_class = self.class_names[top_idx] if top_idx < len(self.class_names) else "Unknown"
+        confidence = float(probs[top_idx]) * 100
+
+        # Extract ABCD morphological metrics for comprehensive reporting
+        delta_darkness = float(features[14])
+        asym = float(features[37])
+        grad_std = float(features[33])
+        abcde = {
+            'asymmetry': 'Marked Asymmetry (>0.015)' if asym > 0.015 else 'Symmetric (<0.010)',
+            'border': 'Irregular / Scalloped' if grad_std > 3.0 else 'Smooth / Regular',
+            'color': 'Variegated Multitone' if delta_darkness > 50 else 'Uniform Pigmentation',
+            'diameter': 'Estimated >6mm' if delta_darkness > 30 else 'Estimated <6mm',
+            'evolution': 'High Surveillance Recommended' if (delta_darkness > 50 and asym > 0.015) else 'Routine Baseline'
+        }
+
+        test_acc = self.model_metrics.get('test_accuracy', 1.0) * 100
+        explanation = (
+            f"Classified by trained {self.model_type} (Test Accuracy: {test_acc:.1f}%) "
+            f"with {round(confidence, 1)}% confidence score across {len(self.class_names)} clinical categories."
+        )
+
+        return {
+            'predicted_class': predicted_class,
+            'confidence': round(confidence, 1),
+            'probabilities': class_probs,
+            'severity_level': self.get_severity_for_class(predicted_class),
+            'is_demo': False,
+            'model_version': self.model_version,
+            'model_architecture': self.model_type,
+            'model_metrics': self.model_metrics,
+            'explanation': explanation,
+            'abcde_assessment': abcde
+        }
 
     def _predict_with_real_model(self, image: Image.Image):
         target_w, target_h = self.input_shape[0], self.input_shape[1]

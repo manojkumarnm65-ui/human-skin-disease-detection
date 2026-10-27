@@ -9,7 +9,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from extensions import db
 from models.user import User
-from services.email_service import send_otp_email
+from services.email_service import send_otp_email, send_email, sanitize_recipient
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
@@ -74,7 +74,9 @@ def send_registration_otp():
     # Ensure user does not already exist
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
-        return jsonify({'error': 'An account with this email already exists'}), 409
+        return jsonify({
+            'error': f'An account with {email} is already registered. You can sign in directly or click "Forgot Password" to receive a verification code.'
+        }), 409
 
     # Generate 6-digit cryptographic-safe OTP
     otp_code = f"{random.randint(100000, 999999)}"
@@ -98,14 +100,15 @@ def send_registration_otp():
 
     print(f"\n[OTP DISPATCH] >>> Verification Code for {email}: {otp_code} (Valid for 10 minutes) <<<\n", flush=True)
 
+    was_sent = email_result.get('success', False)
     res_data = {
-        'message': f'Verification OTP successfully dispatched to {email}.',
+        'message': f'Verification OTP successfully dispatched to {email}.' if was_sent else f'Verification code generated for {email}. (Note: SMTP delivery notice: {email_result.get("error", "Simulated fallback")})',
         'expires_in': 600,
         'email': email,
-        'email_sent': email_result.get('success', False),
+        'email_sent': was_sent,
         'email_simulated': email_result.get('simulated', False)
     }
-    if not email_result.get('success', False):
+    if not was_sent:
         res_data['otp_preview'] = otp_code
 
     return jsonify(res_data), 200
@@ -258,14 +261,15 @@ def forgot_password_otp():
 
     print(f"\n[RECOVERY OTP DISPATCH] >>> Password Reset Code for {email}: {otp_code} (Valid for 10 minutes) <<<\n", flush=True)
 
+    was_sent = email_result.get('success', False)
     res_data = {
-        'message': f'Password recovery code sent to {email}.',
+        'message': f'Password recovery code successfully sent to {email}.' if was_sent else f'Password recovery code generated for {email}. (Note: SMTP notice: {email_result.get("error", "Simulated fallback")})',
         'expires_in': 600,
         'email': email,
-        'email_sent': email_result.get('success', False),
+        'email_sent': was_sent,
         'email_simulated': email_result.get('simulated', False)
     }
-    if not email_result.get('success', False):
+    if not was_sent:
         res_data['otp_preview'] = otp_code
 
     return jsonify(res_data), 200
@@ -455,3 +459,42 @@ def configure_smtp():
         'success': True,
         'message': f"SMTP successfully connected! A test verification email was sent to {test_recipient}. All future OTPs will now be delivered directly to the recipient's inbox."
     }), 200
+
+@auth_bp.route('/send-test-email', methods=['POST'])
+def send_test_email():
+    """Dispatches a test diagnostic email to any specified recipient email address."""
+    data = request.get_json() or {}
+    recipient = sanitize_recipient(data.get('recipient_email') or '')
+    if not recipient or '@' not in recipient:
+        return jsonify({'error': 'Please provide a valid recipient email address'}), 400
+
+    subject = "Human Skin Disease Detection — SMTP Verification & Test Email"
+    html_content = f"""
+    <div style="max-width: 560px; margin: 0 auto; background: #071B33; border: 1px solid rgba(8, 201, 245, 0.4); border-radius: 12px; padding: 28px; font-family: 'Segoe UI', Tahoma, sans-serif; color: #FFFFFF;">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <span style="font-size: 32px;">🔬</span>
+        <h2 style="margin: 8px 0 0; color: #FFFFFF; font-size: 20px;">Human Skin Disease <span style="color: #08C9F5;">Detection</span></h2>
+        <p style="margin: 4px 0 0; color: #94A3B8; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em;">SMTP Email Delivery Test</p>
+      </div>
+      <div style="background: rgba(8, 201, 245, 0.1); border-left: 4px solid #08C9F5; padding: 14px; border-radius: 6px; margin-bottom: 16px;">
+        <strong style="color: #08C9F5;">Direct Delivery Success!</strong>
+        <p style="margin: 4px 0 0; color: #CBD5E1; font-size: 13px;">This test confirms that emails from the AI platform are successfully delivered to <strong>{recipient}</strong>.</p>
+      </div>
+      <p style="color: #94A3B8; font-size: 12px; text-align: center; margin-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px;">
+        Human Skin Disease Detection AI System &bull; Automated Test Notification
+      </p>
+    </div>
+    """
+    plain_content = f"Human Skin Disease Detection — Email Delivery Test\n\nThis confirms that test emails from the system successfully reach: {recipient}."
+
+    result = send_email(to_email=recipient, subject=subject, html_content=html_content, plain_content=plain_content)
+    if result.get('success'):
+        return jsonify({
+            'success': True,
+            'message': f"Test email successfully delivered directly to {recipient}!"
+        }), 200
+    else:
+        return jsonify({
+            'error': f"Failed to deliver email to {recipient}: {result.get('error', 'SMTP connection error')}"
+        }), 400
+

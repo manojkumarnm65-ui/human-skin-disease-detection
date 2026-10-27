@@ -37,6 +37,7 @@ class Config:
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
     
     MODEL_PATH = os.path.join(basedir, 'models', 'skin_disease_model.keras')
+    ML_MODEL_PATH = os.path.join(basedir, 'models', 'skin_disease_model.joblib')
     CLASS_NAMES_PATH = os.path.join(basedir, 'models', 'class_names.json')
     
     # CORS allowed origins

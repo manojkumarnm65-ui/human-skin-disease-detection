@@ -13,7 +13,8 @@ import {
   Info,
   CheckCircle2,
   AlertCircle,
-  Sparkles
+  Sparkles,
+  Zap
 } from 'lucide-react';
 import { diseaseService } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -51,7 +52,7 @@ const DiseasesInfo = () => {
     if (!matchesCategory) {
       if (categoryFilter === 'Infectious') {
         const cat = d.category.toLowerCase();
-        matchesCategory = cat.includes('infection') || cat.includes('fungal') || cat.includes('viral') || cat.includes('bacterial');
+        matchesCategory = cat.includes('infection') || cat.includes('fungal') || cat.includes('viral') || cat.includes('bacterial') || cat.includes('parasitic');
       } else {
         matchesCategory = d.category.toLowerCase().includes(categoryFilter.toLowerCase());
       }
@@ -79,11 +80,11 @@ const DiseasesInfo = () => {
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
           <span className="badge badge-cyan">Clinical Reference</span>
-          <span className="badge badge-benign">18 Pathologies Indexed</span>
+          <span className="badge badge-benign">{diseases.length || 22} Pathologies Indexed</span>
         </div>
-        <h1 style={{ fontSize: '2.2rem', fontWeight: 800 }}>Dermatological Disease Library (18 Conditions)</h1>
+        <h1 style={{ fontSize: '2.2rem', fontWeight: 800 }}>Dermatological Disease Library ({diseases.length || 22} Conditions)</h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginTop: '4px' }}>
-          Evidence-based educational compendium covering benign, inflammatory, infectious, and malignant skin conditions.
+          Evidence-based educational compendium covering biological root causes, symptoms, and dermatological management.
         </p>
       </div>
 
@@ -273,6 +274,50 @@ const DiseasesInfo = () => {
                       </p>
                     </div>
                   </div>
+
+                  {/* Primary Biological, Genetic & Environmental Causes in Humans */}
+                  {d.causes && d.causes.length > 0 && (
+                    <div style={{
+                      marginTop: '24px',
+                      background: 'linear-gradient(135deg, rgba(8, 201, 245, 0.08) 0%, rgba(1, 75, 170, 0.15) 100%)',
+                      padding: '22px',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid rgba(8, 201, 245, 0.35)',
+                      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#08C9F5', fontWeight: 800, marginBottom: '14px', fontSize: '1rem' }}>
+                        <Zap size={18} color="#08C9F5" />
+                        <span>Root Causes & Biological Triggers in Humans</span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+                        {d.causes.map((cause, cIdx) => (
+                          <div key={cIdx} style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '10px',
+                            background: 'rgba(2, 11, 28, 0.65)',
+                            padding: '12px 14px',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(8, 201, 245, 0.2)'
+                          }}>
+                            <span style={{
+                              display: 'inline-block',
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              background: 'var(--cyan-accent)',
+                              marginTop: '6px',
+                              flexShrink: 0,
+                              boxShadow: '0 0 8px var(--cyan-accent)'
+                            }} />
+                            <span style={{ fontSize: '0.88rem', color: '#E2E8F0', lineHeight: 1.5 }}>
+                              {cause}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* 2-Column Grid: Symptoms & Risk Factors */}
                   <div style={{
