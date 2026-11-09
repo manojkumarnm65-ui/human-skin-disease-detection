@@ -1,0 +1,216 @@
+{
+  "model_architecture": "Deep Multi-Scale CNN (SkinNet-CNN)",
+  "framework": "TensorFlow / Keras 3",
+  "input_resolution": [
+    128,
+    128
+  ],
+  "num_classes": 28,
+  "class_names": [
+    "Acne",
+    "Actinic Keratosis",
+    "Alopecia Areata",
+    "Athlete's Foot (Tinea Pedis)",
+    "Basal Cell Carcinoma",
+    "Benign Keratosis",
+    "Cellulitis",
+    "Chickenpox (Varicella)",
+    "Contact Dermatitis",
+    "Dermatofibroma",
+    "Eczema",
+    "Folliculitis",
+    "Impetigo",
+    "Lichen Planus",
+    "Melanoma",
+    "Nail Fungus (Onychomycosis)",
+    "Nevus",
+    "Psoriasis",
+    "Rosacea",
+    "Scabies",
+    "Seborrheic Dermatitis",
+    "Shingles (Herpes Zoster)",
+    "Squamous Cell Carcinoma",
+    "Tinea (Ringworm)",
+    "Urticaria (Hives)",
+    "Vascular Lesion",
+    "Vitiligo",
+    "Warts (Verruca)"
+  ],
+  "test_metrics": {
+    "top1_accuracy": 0.3603238866396761,
+    "top3_accuracy": 0.597165991902834,
+    "macro_f1": 0.3704403214584813,
+    "weighted_f1": 0.33884583263570167,
+    "total_test_samples": 494
+  },
+  "per_class_metrics": {
+    "Acne": {
+      "precision": 0.11538461538461539,
+      "recall": 1.0,
+      "f1_score": 0.20689655172413793,
+      "support": 12
+    },
+    "Actinic Keratosis": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "support": 24
+    },
+    "Alopecia Areata": {
+      "precision": 0.5714285714285714,
+      "recall": 1.0,
+      "f1_score": 0.7272727272727273,
+      "support": 12
+    },
+    "Athlete's Foot (Tinea Pedis)": {
+      "precision": 0.9230769230769231,
+      "recall": 1.0,
+      "f1_score": 0.96,
+      "support": 12
+    },
+    "Basal Cell Carcinoma": {
+      "precision": 0.391304347826087,
+      "recall": 0.375,
+      "f1_score": 0.3829787234042553,
+      "support": 24
+    },
+    "Benign Keratosis": {
+      "precision": 0.3181818181818182,
+      "recall": 0.2916666666666667,
+      "f1_score": 0.30434782608695654,
+      "support": 24
+    },
+    "Cellulitis": {
+      "precision": 0.8571428571428571,
+      "recall": 1.0,
+      "f1_score": 0.9230769230769231,
+      "support": 12
+    },
+    "Chickenpox (Varicella)": {
+      "precision": 0.631578947368421,
+      "recall": 0.375,
+      "f1_score": 0.47058823529411764,
+      "support": 32
+    },
+    "Contact Dermatitis": {
+      "precision": 0.3333333333333333,
+      "recall": 1.0,
+      "f1_score": 0.5,
+      "support": 12
+    },
+    "Dermatofibroma": {
+      "precision": 0.25,
+      "recall": 0.07142857142857142,
+      "f1_score": 0.1111111111111111,
+      "support": 28
+    },
+    "Eczema": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "support": 12
+    },
+    "Folliculitis": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "support": 12
+    },
+    "Impetigo": {
+      "precision": 0.8333333333333334,
+      "recall": 0.46875,
+      "f1_score": 0.6,
+      "support": 32
+    },
+    "Lichen Planus": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 12
+    },
+    "Melanoma": {
+      "precision": 0.06666666666666667,
+      "recall": 0.041666666666666664,
+      "f1_score": 0.05128205128205128,
+      "support": 24
+    },
+    "Nail Fungus (Onychomycosis)": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 12
+    },
+    "Nevus": {
+      "precision": 0.4444444444444444,
+      "recall": 0.3333333333333333,
+      "f1_score": 0.38095238095238093,
+      "support": 24
+    },
+    "Psoriasis": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "support": 12
+    },
+    "Rosacea": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 12
+    },
+    "Scabies": {
+      "precision": 0.5,
+      "recall": 0.045454545454545456,
+      "f1_score": 0.08333333333333333,
+      "support": 22
+    },
+    "Seborrheic Dermatitis": {
+      "precision": 0.625,
+      "recall": 0.20833333333333334,
+      "f1_score": 0.3125,
+      "support": 24
+    },
+    "Shingles (Herpes Zoster)": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "support": 12
+    },
+    "Squamous Cell Carcinoma": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "support": 12
+    },
+    "Tinea (Ringworm)": {
+      "precision": 0.25925925925925924,
+      "recall": 0.5833333333333334,
+      "f1_score": 0.358974358974359,
+      "support": 12
+    },
+    "Urticaria (Hives)": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "support": 22
+    },
+    "Vascular Lesion": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "support": 12
+    },
+    "Vitiligo": {
+      "precision": 0.7058823529411765,
+      "recall": 1.0,
+      "f1_score": 0.8275862068965517,
+      "support": 12
+    },
+    "Warts (Verruca)": {
+      "precision": 0.23076923076923078,
+      "recall": 0.13636363636363635,
+      "f1_score": 0.17142857142857143,
+      "support": 22
+    }
+  }
+}

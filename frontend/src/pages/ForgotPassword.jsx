@@ -38,7 +38,6 @@ const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [otpPreview, setOtpPreview] = useState('');
   const [countdown, setCountdown] = useState(30); // 30-second SMTP OTP cooldown
 
   // Live password requirements
@@ -82,11 +81,6 @@ const ForgotPassword = () => {
     try {
       const res = await authService.sendForgotPasswordOtp(email.trim());
       setSuccessMsg(res.data.message || `Recovery code sent to ${email.trim()}.`);
-      if (res.data.otp_preview) {
-        setOtpPreview(res.data.otp_preview);
-      } else {
-        setOtpPreview('');
-      }
       setStep(2);
       setCountdown(30);
     } catch (err) {
@@ -157,9 +151,6 @@ const ForgotPassword = () => {
     try {
       const res = await authService.sendForgotPasswordOtp(email.trim());
       setSuccessMsg('New recovery code sent to your email.');
-      if (res.data.otp_preview) {
-        setOtpPreview(res.data.otp_preview);
-      }
       setCountdown(30);
     } catch (err) {
       setErrorMsg('Could not resend code. Please wait a moment and retry.');
@@ -384,23 +375,6 @@ const ForgotPassword = () => {
                 ⏱️ {formatTimer(countdown)}
               </span>
             </div>
-
-            {otpPreview && (
-              <div style={{
-                background: 'rgba(8, 201, 245, 0.12)',
-                border: '1px solid rgba(8, 201, 245, 0.4)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '12px 14px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--cyan-accent)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.08em', marginBottom: '4px' }}>
-                  Active Recovery Code
-                </div>
-                <div style={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '6px', color: '#FFFFFF', fontFamily: 'monospace' }}>
-                  {otpPreview}
-                </div>
-              </div>
-            )}
 
             <div>
               <label className="form-label" style={{ fontSize: '0.9rem', marginBottom: '6px', display: 'block' }}>

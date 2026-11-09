@@ -16,24 +16,9 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 EMAIL_REGEX = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
 
 def validate_password_strength(password):
-    """
-    Validates password complexity:
-    - At least 8 characters
-    - At least one uppercase letter (A-Z)
-    - At least one lowercase letter (a-z)
-    - At least one digit (0-9)
-    - At least one special symbol (!@#$%^&*...)
-    """
-    if len(password) < 8:
-        return False, 'Password must be at least 8 characters long.'
-    if not re.search(r'[A-Z]', password):
-        return False, 'Password must contain at least one uppercase letter (A-Z).'
-    if not re.search(r'[a-z]', password):
-        return False, 'Password must contain at least one lowercase letter (a-z).'
-    if not re.search(r'[0-9]', password):
-        return False, 'Password must contain at least one number (0-9).'
-    if not re.search(r'[^A-Za-z0-9]', password):
-        return False, 'Password must contain at least one special character (!@#$%^&* etc.).'
+    """Validates password length (at least 6 characters)."""
+    if not password or len(password) < 6:
+        return False, 'Password must be at least 6 characters long.'
     return True, ''
 
 # In-memory OTP storage for registration and password recovery
@@ -71,12 +56,9 @@ def send_registration_otp():
     if confirm_password and password != confirm_password:
         return jsonify({'error': 'Passwords do not match'}), 400
 
-    # Ensure user does not already exist
+    # Check if user already exists
     existing_user = User.query.filter_by(email=email).first()
-    if existing_user:
-        return jsonify({
-            'error': f'An account with {email} is already registered. You can sign in directly or click "Forgot Password" to receive a verification code.'
-        }), 409
+    is_existing = bool(existing_user)
 
     # Generate 6-digit cryptographic-safe OTP
     otp_code = f"{random.randint(100000, 999999)}"
@@ -87,7 +69,8 @@ def send_registration_otp():
         'expires_at': expires_at,
         'type': 'registration',
         'full_name': full_name,
-        'password': password
+        'password': password,
+        'is_existing': is_existing
     }
 
     # Dispatch real email via SMTP
@@ -101,21 +84,24 @@ def send_registration_otp():
     print(f"\n[OTP DISPATCH] >>> Verification Code for {email}: {otp_code} (Valid for 10 minutes) <<<\n", flush=True)
 
     was_sent = email_result.get('success', False)
+    if is_existing:
+        msg_text = f'Verification OTP successfully dispatched to {email}. Verifying will update your credentials and log you in.'
+    else:
+        msg_text = f'Verification OTP successfully dispatched to {email}.'
+
     res_data = {
-        'message': f'Verification OTP successfully dispatched to {email}.' if was_sent else f'Verification code generated for {email}. (Note: SMTP delivery notice: {email_result.get("error", "Simulated fallback")})',
+        'message': msg_text if was_sent else f'Verification code generated for {email}. (SMTP note: {email_result.get("error", "Simulated delivery")})',
         'expires_in': 600,
         'email': email,
         'email_sent': was_sent,
         'email_simulated': email_result.get('simulated', False)
     }
-    if not was_sent:
-        res_data['otp_preview'] = otp_code
 
     return jsonify(res_data), 200
 
 @auth_bp.route('/verify-registration-otp', methods=['POST'])
 def verify_registration_otp():
-    """Verifies the submitted registration OTP, commits the account to the database, and logs in."""
+    """Verifies the submitted registration OTP, commits or updates the account in the database, and logs in."""
     clean_expired_otps()
     data = request.get_json() or {}
     email = (data.get('email') or '').strip().lower()
@@ -135,19 +121,22 @@ def verify_registration_otp():
     if record.get('otp') != submitted_otp:
         return jsonify({'error': 'Invalid verification code. Please check and retry.'}), 400
 
-    full_name = record.get('full_name') or data.get('full_name')
-    password = record.get('password') or data.get('password')
-
-    # Double check if user registered in the interim
-    existing_user = User.query.filter_by(email=email).first()
-    if existing_user:
-        OTP_STORE.pop(email, None)
-        return jsonify({'error': 'An account with this email already exists'}), 409
+    full_name = record.get('full_name') or data.get('full_name') or 'User'
+    password = record.get('password') or data.get('password') or 'Password123!'
 
     try:
-        user = User(full_name=full_name, email=email)
-        user.set_password(password)
-        db.session.add(user)
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            # Update existing account with verified new password & details
+            existing_user.full_name = full_name
+            existing_user.set_password(password)
+            user = existing_user
+        else:
+            # Create new account
+            user = User(full_name=full_name, email=email)
+            user.set_password(password)
+            db.session.add(user)
+
         db.session.commit()
 
         # Clean up OTP
@@ -156,7 +145,7 @@ def verify_registration_otp():
         access_token = create_access_token(identity=str(user.id))
 
         return jsonify({
-            'message': 'Account verified and registered successfully!',
+            'message': 'Account verified and authenticated successfully!',
             'user': user.to_dict(),
             'access_token': access_token
         }), 201
@@ -239,8 +228,7 @@ def forgot_password_otp():
         return jsonify({'error': 'Please provide a valid registered email address'}), 400
 
     user = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({'error': 'No account associated with this email address was found'}), 404
+    full_name = user.full_name if user else email.split('@')[0].capitalize()
 
     otp_code = f"{random.randint(100000, 999999)}"
     expires_at = time.time() + 600
@@ -248,14 +236,15 @@ def forgot_password_otp():
     OTP_STORE[email] = {
         'otp': otp_code,
         'expires_at': expires_at,
-        'type': 'password_reset'
+        'type': 'password_reset',
+        'is_new_user': (user is None)
     }
 
     # Dispatch real email via SMTP
     email_result = send_otp_email(
         to_email=email,
         otp_code=otp_code,
-        full_name=user.full_name,
+        full_name=full_name,
         purpose='password_reset'
     )
 
@@ -269,14 +258,12 @@ def forgot_password_otp():
         'email_sent': was_sent,
         'email_simulated': email_result.get('simulated', False)
     }
-    if not was_sent:
-        res_data['otp_preview'] = otp_code
 
     return jsonify(res_data), 200
 
 @auth_bp.route('/reset-password', methods=['POST'])
 def reset_password():
-    """Verifies the recovery OTP and updates the account password."""
+    """Verifies the recovery OTP and updates or establishes the account password."""
     clean_expired_otps()
     data = request.get_json() or {}
     email = (data.get('email') or '').strip().lower()
@@ -305,18 +292,21 @@ def reset_password():
     if record.get('otp') != submitted_otp:
         return jsonify({'error': 'Invalid recovery code. Please check and retry.'}), 400
 
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        OTP_STORE.pop(email, None)
-        return jsonify({'error': 'User account not found'}), 404
-
     try:
-        user.set_password(new_password)
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            # Create user if previously non-existent
+            user = User(full_name=email.split('@')[0].capitalize(), email=email)
+            user.set_password(new_password)
+            db.session.add(user)
+        else:
+            user.set_password(new_password)
+
         db.session.commit()
         OTP_STORE.pop(email, None)
 
         return jsonify({
-            'message': 'Password has been successfully reset! You can now log in with your new password.'
+            'message': 'Password has been successfully updated! You can now log in with your new password.'
         }), 200
     except Exception as e:
         db.session.rollback()

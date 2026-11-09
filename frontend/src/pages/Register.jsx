@@ -38,7 +38,6 @@ const Register = () => {
 
   // OTP Verification States
   const [otp, setOtp] = useState('');
-  const [otpPreview, setOtpPreview] = useState('');
   const [countdown, setCountdown] = useState(30); // 30 seconds resend timer
 
   const [loading, setLoading] = useState(false);
@@ -123,11 +122,6 @@ const Register = () => {
       });
 
       setSuccessMsg(res.data.message || `Verification OTP has been sent to ${email.trim()}.`);
-      if (res.data.otp_preview) {
-        setOtpPreview(res.data.otp_preview);
-      } else {
-        setOtpPreview('');
-      }
       setStep(2);
       setCountdown(30); // 30 seconds resend timer
     } catch (err) {
@@ -178,11 +172,6 @@ const Register = () => {
         confirm_password: confirmPassword,
       });
       setSuccessMsg(res.data.message || `A fresh verification code was sent to ${email.trim()}.`);
-      if (res.data.otp_preview) {
-        setOtpPreview(res.data.otp_preview);
-      } else {
-        setOtpPreview('');
-      }
       setCountdown(30); // 30 seconds resend timer
     } catch (err) {
       setErrorMsg('Failed to resend code. Please wait a moment and retry.');
@@ -596,42 +585,6 @@ const Register = () => {
                   ⏱️ {formatTimer(countdown)}
                 </span>
               </div>
-
-              {otpPreview && (
-                <div style={{
-                  background: 'rgba(8, 201, 245, 0.12)',
-                  border: '1px dashed var(--cyan-accent)',
-                  borderRadius: 'var(--radius-sm)',
-                  padding: '10px 14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  fontSize: '0.84rem'
-                }}>
-                  <div>
-                    <span style={{ color: 'var(--text-muted)' }}>Demo / Testing Code: </span>
-                    <strong style={{ color: 'var(--cyan-accent)', letterSpacing: '2px', fontSize: '1.05rem', marginLeft: '6px' }}>
-                      {otpPreview}
-                    </strong>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setOtp(otpPreview)}
-                    style={{
-                      background: 'rgba(8, 201, 245, 0.2)',
-                      border: '1px solid var(--cyan-accent)',
-                      color: '#FFFFFF',
-                      borderRadius: '4px',
-                      padding: '4px 10px',
-                      cursor: 'pointer',
-                      fontSize: '0.78rem',
-                      fontWeight: 700
-                    }}
-                  >
-                    Auto-Fill
-                  </button>
-                </div>
-              )}
 
               <div>
                 <label className="form-label" style={{ fontSize: '0.9rem', marginBottom: '8px', display: 'block' }}>
