@@ -101,10 +101,10 @@ def send_registration_otp():
     else:
         LAST_SMTP_STATUS['working'] = False
         LAST_SMTP_STATUS['last_error'] = smtp_err
-        if '535' in smtp_err or 'BadCredentials' in smtp_err:
+        if '535' in smtp_err or 'BadCredentials' in smtp_err or 'Connection unexpectedly closed' in smtp_err:
             email_err_msg = 'Gmail rejected sender credentials (535 BadCredentials). Please configure a 16-character App Password at myaccount.google.com/apppasswords.'
         else:
-            email_err_msg = f'Email delivery failed: {smtp_err}'
+            email_err_msg = f'{smtp_err}'
         msg_text = f'Verification code generated for {email}, but email delivery failed: {email_err_msg}'
 
     print(f"\n=======================================================", flush=True)
@@ -287,10 +287,10 @@ def forgot_password_otp():
     else:
         LAST_SMTP_STATUS['working'] = False
         LAST_SMTP_STATUS['last_error'] = smtp_err
-        if '535' in smtp_err or 'BadCredentials' in smtp_err:
+        if '535' in smtp_err or 'BadCredentials' in smtp_err or 'Connection unexpectedly closed' in smtp_err:
             email_err_msg = 'Gmail rejected sender credentials (535 BadCredentials). Please configure a 16-character App Password at myaccount.google.com/apppasswords.'
         else:
-            email_err_msg = f'Email delivery failed: {smtp_err}'
+            email_err_msg = f'{smtp_err}'
         msg_text = f'Recovery code generated for {email}, but email delivery failed: {email_err_msg}'
 
     print(f"\n=======================================================", flush=True)

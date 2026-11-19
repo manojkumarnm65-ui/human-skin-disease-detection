@@ -73,7 +73,13 @@ def _open_smtp_session(cfg):
                 if cfg['use_tls']:
                     server.starttls()
 
-            server.login(cfg['username'], cfg['password'])
+            try:
+                server.login(cfg['username'], cfg['password'])
+            except (smtplib.SMTPAuthenticationError, smtplib.SMTPServerDisconnected) as auth_err:
+                if 'gmail' in cfg['server'].lower() or cfg.get('is_gmail'):
+                    raise Exception("Gmail rejected sender credentials (535 BadCredentials). Please generate a fresh 16-character Google App Password at myaccount.google.com/apppasswords and update it in SMTP settings.")
+                raise auth_err
+
             return server, port
         except Exception as e:
             last_exc = e
