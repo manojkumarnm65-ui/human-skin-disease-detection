@@ -25,6 +25,12 @@ def validate_password_strength(password):
 # Structure: { email: { 'otp': '123456', 'expires_at': timestamp, 'type': 'registration'|'reset', 'data': {...} } }
 OTP_STORE = {}
 
+LAST_SMTP_STATUS = {
+    'checked_at': None,
+    'working': None,
+    'last_error': None
+}
+
 def clean_expired_otps():
     """Removes expired OTP tokens from memory store."""
     now = time.time()
@@ -81,19 +87,41 @@ def send_registration_otp():
         purpose='registration'
     )
 
-    print(f"\n[OTP DISPATCH] >>> Verification Code for {email}: {otp_code} (Valid for 10 minutes) <<<\n", flush=True)
-
     was_sent = email_result.get('success', False)
-    if is_existing:
-        msg_text = f'Verification OTP successfully dispatched to {email}. Verifying will update your credentials and log you in.'
+    smtp_err = email_result.get('error', '')
+
+    if was_sent:
+        LAST_SMTP_STATUS['working'] = True
+        LAST_SMTP_STATUS['last_error'] = None
+        if is_existing:
+            msg_text = f'Verification code successfully dispatched to {email}. Verifying will update your credentials and log you in.'
+        else:
+            msg_text = f'Verification code successfully dispatched to {email}.'
+        email_err_msg = ''
     else:
-        msg_text = f'Verification OTP successfully dispatched to {email}.'
+        LAST_SMTP_STATUS['working'] = False
+        LAST_SMTP_STATUS['last_error'] = smtp_err
+        if '535' in smtp_err or 'BadCredentials' in smtp_err:
+            email_err_msg = 'Gmail rejected sender credentials (535 BadCredentials). Please configure a 16-character App Password at myaccount.google.com/apppasswords.'
+        else:
+            email_err_msg = f'Email delivery failed: {smtp_err}'
+        msg_text = f'Verification code generated for {email}, but email delivery failed: {email_err_msg}'
+
+    print(f"\n=======================================================", flush=True)
+    print(f"[REGISTRATION OTP] Recipient: {email}", flush=True)
+    print(f"[REGISTRATION OTP] Code: {otp_code} (Valid for 10 minutes)", flush=True)
+    print(f"[REGISTRATION OTP] Delivered to inbox: {was_sent}", flush=True)
+    if not was_sent:
+        print(f"[REGISTRATION OTP] Warning: {email_err_msg}", flush=True)
+    print(f"=======================================================\n", flush=True)
 
     res_data = {
-        'message': msg_text if was_sent else f'Verification code generated for {email}. (SMTP note: {email_result.get("error", "Simulated delivery")})',
+        'message': msg_text,
         'expires_in': 600,
         'email': email,
         'email_sent': was_sent,
+        'email_error': email_err_msg,
+        'dev_otp': otp_code if not was_sent else None,
         'email_simulated': email_result.get('simulated', False)
     }
 
@@ -248,14 +276,38 @@ def forgot_password_otp():
         purpose='password_reset'
     )
 
-    print(f"\n[RECOVERY OTP DISPATCH] >>> Password Reset Code for {email}: {otp_code} (Valid for 10 minutes) <<<\n", flush=True)
-
     was_sent = email_result.get('success', False)
+    smtp_err = email_result.get('error', '')
+
+    if was_sent:
+        LAST_SMTP_STATUS['working'] = True
+        LAST_SMTP_STATUS['last_error'] = None
+        msg_text = f'Password recovery code successfully sent to {email}.'
+        email_err_msg = ''
+    else:
+        LAST_SMTP_STATUS['working'] = False
+        LAST_SMTP_STATUS['last_error'] = smtp_err
+        if '535' in smtp_err or 'BadCredentials' in smtp_err:
+            email_err_msg = 'Gmail rejected sender credentials (535 BadCredentials). Please configure a 16-character App Password at myaccount.google.com/apppasswords.'
+        else:
+            email_err_msg = f'Email delivery failed: {smtp_err}'
+        msg_text = f'Recovery code generated for {email}, but email delivery failed: {email_err_msg}'
+
+    print(f"\n=======================================================", flush=True)
+    print(f"[RECOVERY OTP] Recipient: {email}", flush=True)
+    print(f"[RECOVERY OTP] Code: {otp_code} (Valid for 10 minutes)", flush=True)
+    print(f"[RECOVERY OTP] Delivered to inbox: {was_sent}", flush=True)
+    if not was_sent:
+        print(f"[RECOVERY OTP] Warning: {email_err_msg}", flush=True)
+    print(f"=======================================================\n", flush=True)
+
     res_data = {
-        'message': f'Password recovery code successfully sent to {email}.' if was_sent else f'Password recovery code generated for {email}. (Note: SMTP notice: {email_result.get("error", "Simulated fallback")})',
+        'message': msg_text,
         'expires_in': 600,
         'email': email,
         'email_sent': was_sent,
+        'email_error': email_err_msg,
+        'dev_otp': otp_code if not was_sent else None,
         'email_simulated': email_result.get('simulated', False)
     }
 
@@ -333,7 +385,7 @@ def get_current_user():
 
 @auth_bp.route('/smtp-status', methods=['GET'])
 def get_smtp_status():
-    """Returns whether SMTP is configured and the masked sender email."""
+    """Returns whether SMTP is configured, its live working status, and the masked sender email."""
     username = os.environ.get('SMTP_USERNAME', '').strip()
     password = os.environ.get('SMTP_PASSWORD', '').strip()
     configured = bool(username and password)
@@ -345,6 +397,8 @@ def get_smtp_status():
     
     return jsonify({
         'configured': configured,
+        'working': LAST_SMTP_STATUS.get('working'),
+        'last_error': LAST_SMTP_STATUS.get('last_error'),
         'sender_email': masked,
         'smtp_server': os.environ.get('SMTP_SERVER', 'smtp.gmail.com'),
         'smtp_port': int(os.environ.get('SMTP_PORT', 587)),
@@ -392,10 +446,14 @@ def configure_smtp():
         test_msg.attach(MIMEText(test_body, 'plain'))
         smtp_client.sendmail(username, [test_recipient], test_msg.as_string())
         smtp_client.quit()
+        LAST_SMTP_STATUS['working'] = True
+        LAST_SMTP_STATUS['last_error'] = None
         print(f"[SMTP VERIFY SUCCESS] Test email delivered to {test_recipient}!")
 
     except Exception as e:
         err = str(e)
+        LAST_SMTP_STATUS['working'] = False
+        LAST_SMTP_STATUS['last_error'] = err
         print(f"[SMTP VERIFY FAILED] Error: {err}")
         return jsonify({
             'error': f"SMTP Connection Failed: {err}. If using Gmail, ensure 2-Step Verification is ON and you generated a 16-character App Password at myaccount.google.com/apppasswords."

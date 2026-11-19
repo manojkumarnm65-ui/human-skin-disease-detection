@@ -173,30 +173,49 @@ const SmtpSettingsModal = ({ isOpen, onClose, onConfigured }) => {
         <div style={{ overflowY: 'auto', padding: '24px' }}>
           {/* Current Status Indicator */}
           <div style={{
-            background: status?.configured ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-            border: `1px solid ${status?.configured ? '#10B981' : '#F59E0B'}`,
+            background: status?.configured && status?.working !== false ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.12)',
+            border: `1px solid ${status?.configured && status?.working !== false ? '#10B981' : '#EF4444'}`,
             borderRadius: 'var(--radius-md)',
             padding: '12px 16px',
-            marginBottom: '20px',
+            marginBottom: '16px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             fontSize: '0.85rem'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {status?.configured ? (
+              {status?.configured && status?.working !== false ? (
                 <CheckCircle2 size={18} color="#10B981" />
               ) : (
-                <AlertTriangle size={18} color="#F59E0B" />
+                <AlertTriangle size={18} color="#EF4444" />
               )}
               <span>
                 Delivery Status:{' '}
-                <strong style={{ color: status?.configured ? '#10B981' : '#F59E0B' }}>
-                  {status?.configured ? `Connected (${status.sender_email})` : 'Not Connected (Credentials Needed)'}
+                <strong style={{ color: status?.configured && status?.working !== false ? '#10B981' : '#EF4444' }}>
+                  {status?.configured && status?.working !== false
+                    ? `Connected (${status.sender_email})`
+                    : status?.working === false
+                    ? `Credentials Rejected by Gmail (${status.sender_email || 'Check App Password'})`
+                    : 'Not Connected (Credentials Needed)'}
                 </strong>
               </span>
             </div>
           </div>
+
+          {status?.working === false && (
+            <div style={{
+              background: 'rgba(239, 68, 68, 0.12)',
+              border: '1px solid #EF4444',
+              borderRadius: 'var(--radius-sm)',
+              padding: '10px 14px',
+              color: '#FCA5A5',
+              fontSize: '0.82rem',
+              marginBottom: '16px',
+              lineHeight: 1.4
+            }}>
+              <strong>Action Required:</strong> Google rejected the current App Password with <code>535 BadCredentials</code>. Please generate a fresh 16-character App Password at <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noreferrer" style={{ color: '#08C9F5', textDecoration: 'underline' }}>myaccount.google.com/apppasswords</a> and save it below.
+            </div>
+          )}
 
           {/* Quick 3-Step Gmail Instructions */}
           <div style={{

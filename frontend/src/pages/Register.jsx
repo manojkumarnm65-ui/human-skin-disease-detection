@@ -39,6 +39,9 @@ const Register = () => {
   // OTP Verification States
   const [otp, setOtp] = useState('');
   const [countdown, setCountdown] = useState(30); // 30 seconds resend timer
+  const [emailSent, setEmailSent] = useState(true);
+  const [emailError, setEmailError] = useState('');
+  const [devOtp, setDevOtp] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -121,7 +124,10 @@ const Register = () => {
         confirm_password: confirmPassword,
       });
 
-      setSuccessMsg(res.data.message || `Verification OTP has been sent to ${email.trim()}.`);
+      setEmailSent(res.data.email_sent !== false);
+      setEmailError(res.data.email_error || '');
+      setDevOtp(res.data.dev_otp || '');
+      setSuccessMsg(res.data.message || `Verification OTP has been processed for ${email.trim()}.`);
       setStep(2);
       setCountdown(30); // 30 seconds resend timer
     } catch (err) {
@@ -573,7 +579,7 @@ const Register = () => {
                 justifyContent: 'space-between',
                 alignItems: 'center'
               }}>
-                <span>Code sent to: <strong>{email}</strong></span>
+                <span>Recipient: <strong>{email}</strong></span>
                 <span style={{ 
                   color: countdown <= 10 ? '#EF4444' : 'var(--cyan-accent)', 
                   fontWeight: 800,
@@ -585,6 +591,73 @@ const Register = () => {
                   ⏱️ {formatTimer(countdown)}
                 </span>
               </div>
+
+              {emailSent === false && (
+                <div style={{
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  border: '1px solid rgba(239, 68, 68, 0.45)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '12px 14px',
+                  fontSize: '0.83rem',
+                  color: '#FCA5A5'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <span style={{ fontWeight: 700, color: '#F87171', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <AlertCircle size={15} />
+                      Email Delivery Alert
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowSmtpModal(true)}
+                      style={{
+                        background: 'rgba(8, 201, 245, 0.15)',
+                        border: '1px solid #08C9F5',
+                        borderRadius: '4px',
+                        color: '#08C9F5',
+                        fontSize: '0.74rem',
+                        fontWeight: 700,
+                        padding: '3px 8px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Update App Password
+                    </button>
+                  </div>
+                  <p style={{ margin: '0 0 8px 0', lineHeight: 1.4, color: '#E2E8F0' }}>
+                    {emailError || 'Google rejected the sender credentials (535 BadCredentials). An email could not reach your inbox until a valid Google App Password is provided.'}
+                  </p>
+                  {devOtp && (
+                    <div style={{
+                      background: 'rgba(2, 11, 28, 0.85)',
+                      border: '1px dashed #F59E0B',
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '8px 12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      color: '#FDE68A'
+                    }}>
+                      <span>OTP Code: <strong style={{ color: '#08C9F5', letterSpacing: '2px', fontSize: '1.05rem', marginLeft: '6px' }}>{devOtp}</strong></span>
+                      <button
+                        type="button"
+                        onClick={() => setOtp(devOtp)}
+                        style={{
+                          background: 'linear-gradient(135deg, #014BAA, #08C9F5)',
+                          border: 'none',
+                          borderRadius: 'var(--radius-sm)',
+                          color: '#FFFFFF',
+                          fontWeight: 700,
+                          fontSize: '0.74rem',
+                          padding: '4px 10px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Insert Code
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div>
                 <label className="form-label" style={{ fontSize: '0.9rem', marginBottom: '8px', display: 'block' }}>
