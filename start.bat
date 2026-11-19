@@ -6,7 +6,12 @@ echo ========================================================
 echo.
 
 echo [1/2] Starting Flask Backend (http://127.0.0.1:5000)...
-start "SkinCare AI - Backend" cmd /k "cd /d "%~dp0backend" && venv\Scripts\python.exe app.py"
+set PYTHON_BIN=python
+if exist "%~dp0backend\venv\Scripts\python.exe" (
+    "%~dp0backend\venv\Scripts\python.exe" -c "import flask" >nul 2>&1
+    if not errorlevel 1 set PYTHON_BIN="%~dp0backend\venv\Scripts\python.exe"
+)
+start "SkinCare AI - Backend" cmd /k "cd /d "%~dp0backend" && %PYTHON_BIN% app.py"
 
 echo Waiting for backend to initialize...
 timeout /t 3 /nobreak >nul

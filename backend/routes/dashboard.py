@@ -79,41 +79,58 @@ def get_recent_predictions():
 def get_chart_data():
     user_id = int(get_jwt_identity())
     
-    # 1. Condition distribution
-    classes = ["Melanoma", "Nevus", "Eczema", "Psoriasis", "Acne"]
-    distribution = []
+    # 1. Condition distribution: aggregate actual top conditions tested by this user
+    # Fast single group by query:
+    dist_results = (
+        db.session.query(Prediction.predicted_class, db.func.count(Prediction.id))
+        .filter(Prediction.user_id == user_id)
+        .group_by(Prediction.predicted_class)
+        .order_by(db.func.count(Prediction.id).desc())
+        .limit(8)
+        .all()
+    )
     
-    for cls in classes:
-        cnt = Prediction.query.filter_by(user_id=user_id, predicted_class=cls).count()
-        distribution.append({
-            'name': cls,
-            'count': cnt
-        })
+    distribution = [{'name': name, 'count': count} for name, count in dist_results]
+    if not distribution:
+        fallback_classes = ["Melanoma", "Nevus", "Eczema", "Psoriasis", "Acne"]
+        distribution = [{'name': cls, 'count': 0} for cls in fallback_classes]
 
-    # 2. Daily trend over past 7 days
+    # 2. Daily trend over past 7 days in a single query
     now = datetime.now(timezone.utc)
-    weekly_trend = []
+    seven_days_ago = (now - timedelta(days=6)).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    recent_preds = (
+        Prediction.query
+        .filter(Prediction.user_id == user_id, Prediction.created_at >= seven_days_ago)
+        .all()
+    )
+    
+    # Aggregate by day in memory (sub-millisecond performance)
+    days_data = {}
     for i in range(6, -1, -1):
         day_date = (now - timedelta(days=i)).date()
-        day_start = datetime(day_date.year, day_date.month, day_date.day, 0, 0, 0, tzinfo=timezone.utc)
-        day_end = datetime(day_date.year, day_date.month, day_date.day, 23, 59, 59, tzinfo=timezone.utc)
+        days_data[day_date] = {'total': 0, 'benign': 0, 'concerning': 0}
 
-        day_preds = Prediction.query.filter(
-            Prediction.user_id == user_id,
-            Prediction.created_at >= day_start,
-            Prediction.created_at <= day_end
-        )
-        
-        benign = day_preds.filter(Prediction.severity_level.ilike('%benign%')).count()
-        concerning = day_preds.filter(Prediction.severity_level.ilike('%concerning%')).count()
-        total = day_preds.count()
+    for p in recent_preds:
+        if p.created_at:
+            p_date = p.created_at.date()
+            if p_date in days_data:
+                days_data[p_date]['total'] += 1
+                sev = (p.severity_level or '').lower()
+                if 'benign' in sev or 'low risk' in sev:
+                    days_data[p_date]['benign'] += 1
+                elif 'concerning' in sev or 'high risk' in sev:
+                    days_data[p_date]['concerning'] += 1
 
-        weekly_trend.append({
-            'date': day_date.strftime('%b %d'),
-            'total': total,
-            'benign': benign,
-            'concerning': concerning
-        })
+    weekly_trend = [
+        {
+            'date': d.strftime('%b %d'),
+            'total': vals['total'],
+            'benign': vals['benign'],
+            'concerning': vals['concerning']
+        }
+        for d, vals in days_data.items()
+    ]
 
     return jsonify({
         'condition_distribution': distribution,

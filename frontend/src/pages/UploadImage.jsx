@@ -81,8 +81,8 @@ const UploadImage = () => {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
-  // Active Input Mode: 'camera' (Visible Live Camera) vs 'upload' (File Dropzone / Samples)
-  const [inputMode, setInputMode] = useState('camera');
+  // Active Input Mode: 'upload' (File Dropzone / Samples) vs 'camera' (Visible Live Camera)
+  const [inputMode, setInputMode] = useState('upload');
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -321,7 +321,7 @@ const UploadImage = () => {
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
           <span className="badge badge-cyan">Neural Inference Studio</span>
-          <span className="badge badge-benign">Live Visible Camera & 18 Disease Models</span>
+          <span className="badge badge-benign">Live Visible Camera & 28 Disease Models</span>
         </div>
         <h1 style={{ fontSize: '2.2rem', fontWeight: 800 }}>Upload & Skin Camera Diagnosis</h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginTop: '4px' }}>
@@ -635,7 +635,7 @@ const UploadImage = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
                     <Sparkles size={16} color="var(--cyan-accent)" />
                     <span style={{ fontSize: '0.86rem', fontWeight: 700, color: '#FFFFFF' }}>
-                      Or Test With All 18 Dermatological Samples:
+                      Or Test With All 28 Dermatological Samples:
                     </span>
                   </div>
                   <div style={{
@@ -854,7 +854,7 @@ const UploadImage = () => {
               <div style={{ padding: '20px 0' }}>
                 <LoadingSpinner
                   message="Analyzing image..."
-                  subtext="Evaluating features across 18 dermatological disease classes"
+                  subtext="Evaluating features across all 28 dermatological disease classes"
                 />
               </div>
             )}

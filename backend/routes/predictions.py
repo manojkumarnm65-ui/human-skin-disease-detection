@@ -59,8 +59,13 @@ def analyze_image():
 
         # 4. Fetch educational disease information if matched
         disease_info = None
+        pred_clean = result['predicted_class'].split('(')[0].strip()
         disease_record = DiseaseInformation.query.filter(
-            DiseaseInformation.name.ilike(f"%{result['predicted_class']}%")
+            db.or_(
+                DiseaseInformation.name.ilike(f"%{result['predicted_class']}%"),
+                DiseaseInformation.name.ilike(f"%{pred_clean}%"),
+                DiseaseInformation.slug.ilike(f"%{pred_clean.lower().replace(' ', '-')}%")
+            )
         ).first()
         if disease_record:
             disease_info = disease_record.to_dict()
@@ -147,8 +152,13 @@ def get_prediction_detail(pred_id):
             return jsonify({'error': 'Access denied'}), 403
 
     # Include related disease info
+    pred_clean = prediction.predicted_class.split('(')[0].strip()
     disease_record = DiseaseInformation.query.filter(
-        DiseaseInformation.name.ilike(f"%{prediction.predicted_class}%")
+        db.or_(
+            DiseaseInformation.name.ilike(f"%{prediction.predicted_class}%"),
+            DiseaseInformation.name.ilike(f"%{pred_clean}%"),
+            DiseaseInformation.slug.ilike(f"%{pred_clean.lower().replace(' ', '-')}%")
+        )
     ).first()
 
     return jsonify({
@@ -215,8 +225,13 @@ def email_prediction_report():
     if prediction.user_id != user_id and user.role != 'admin':
         return jsonify({'error': 'Access denied'}), 403
 
+    pred_clean = prediction.predicted_class.split('(')[0].strip()
     disease_record = DiseaseInformation.query.filter(
-        DiseaseInformation.name.ilike(f"%{prediction.predicted_class}%")
+        db.or_(
+            DiseaseInformation.name.ilike(f"%{prediction.predicted_class}%"),
+            DiseaseInformation.name.ilike(f"%{pred_clean}%"),
+            DiseaseInformation.slug.ilike(f"%{pred_clean.lower().replace(' ', '-')}%")
+        )
     ).first()
 
     disease_info = disease_record.to_dict() if disease_record else None

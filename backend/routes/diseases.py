@@ -4,12 +4,19 @@ from models.disease import DiseaseInformation
 
 diseases_bp = Blueprint('diseases', __name__, url_prefix='/api/diseases')
 
+_DISEASES_CACHE = None
+
 @diseases_bp.route('', methods=['GET'])
 @diseases_bp.route('/', methods=['GET'])
 def get_all_diseases():
+    global _DISEASES_CACHE
+    if _DISEASES_CACHE is not None:
+        return jsonify({'diseases': _DISEASES_CACHE}), 200
+
     records = DiseaseInformation.query.order_by(DiseaseInformation.id.asc()).all()
+    _DISEASES_CACHE = [d.to_dict() for d in records]
     return jsonify({
-        'diseases': [d.to_dict() for d in records]
+        'diseases': _DISEASES_CACHE
     }), 200
 
 @diseases_bp.route('/<identifier>', methods=['GET'])

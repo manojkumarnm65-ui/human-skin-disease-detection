@@ -1,3 +1,4 @@
+import os
 import urllib.request
 import urllib.parse
 import json
@@ -48,7 +49,7 @@ def run_tests():
             print(f"    - #{p['id']}: {p['predicted_class']} ({p['confidence']}%) - {p['severity_level']}")
 
     # 6. Test Image Analysis via Multipart Form Data
-    sample_img_path = "samples/sample_melanoma.jpg"
+    sample_img_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "samples", "sample_melanoma.jpg")
     with open(sample_img_path, 'rb') as f:
         img_bytes = f.read()
 

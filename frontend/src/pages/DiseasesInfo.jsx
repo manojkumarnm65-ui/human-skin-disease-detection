@@ -71,7 +71,7 @@ const DiseasesInfo = () => {
   };
 
   if (loading) {
-    return <LoadingSpinner message="Loading medical knowledge library..." subtext="Retrieving peer-reviewed clinical summaries across 18 conditions" />;
+    return <LoadingSpinner message="Loading medical knowledge library..." subtext="Retrieving peer-reviewed clinical summaries across all 28 dermatological conditions" />;
   }
 
   return (
@@ -80,9 +80,9 @@ const DiseasesInfo = () => {
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
           <span className="badge badge-cyan">Clinical Reference</span>
-          <span className="badge badge-benign">{diseases.length || 22} Pathologies Indexed</span>
+          <span className="badge badge-benign">{diseases.length || 28} Pathologies Indexed</span>
         </div>
-        <h1 style={{ fontSize: '2.2rem', fontWeight: 800 }}>Dermatological Disease Library ({diseases.length || 22} Conditions)</h1>
+        <h1 style={{ fontSize: '2.2rem', fontWeight: 800 }}>Dermatological Disease Library ({diseases.length || 28} Conditions)</h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginTop: '4px' }}>
           Evidence-based educational compendium covering biological root causes, symptoms, and dermatological management.
         </p>

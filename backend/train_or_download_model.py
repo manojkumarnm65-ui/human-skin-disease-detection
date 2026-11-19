@@ -24,6 +24,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.neural_network import MLPClassifier
 from sklearn.naive_bayes import GaussianNB
+from sklearn.ensemble import ExtraTreesClassifier, HistGradientBoostingClassifier, VotingClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 # Ensure backend root is on sys.path
@@ -312,6 +313,21 @@ def train_and_test(force_recreate_dataset=False):
     X_train, y_train, X_test, y_test = load_data_from_folders(class_names)
 
     # 3. Model Candidates
+    et_clf = ExtraTreesClassifier(
+        n_estimators=180,
+        max_features='sqrt',
+        min_samples_split=3,
+        class_weight='balanced',
+        random_state=42,
+        n_jobs=-1
+    )
+
+    hgb_clf = HistGradientBoostingClassifier(
+        max_iter=160,
+        class_weight='balanced',
+        random_state=42
+    )
+
     wide_mlp = Pipeline([
         ('scaler', StandardScaler()),
         ('classifier', MLPClassifier(
@@ -326,29 +342,20 @@ def train_and_test(force_recreate_dataset=False):
         ))
     ])
 
-    deep_mlp = Pipeline([
-        ('scaler', StandardScaler()),
-        ('classifier', MLPClassifier(
-            hidden_layer_sizes=(128, 64),
-            activation='relu',
-            max_iter=700,
-            alpha=1e-3,
-            solver='adam',
-            random_state=42,
-            early_stopping=True,
-            n_iter_no_change=20
-        ))
-    ])
-
-    nb = Pipeline([
-        ('scaler', StandardScaler()),
-        ('classifier', GaussianNB())
-    ])
+    ensemble_clf = VotingClassifier(
+        estimators=[
+            ('et', et_clf),
+            ('hgb', hgb_clf),
+            ('mlp', wide_mlp)
+        ],
+        voting='soft'
+    )
 
     candidates = {
-        "Wide Deep MLP (256x128x64)": wide_mlp,
-        "Multi-Layer Perceptron (128x64)": deep_mlp,
-        "Gaussian Naive Bayes": nb
+        "Clinical Multi-Model Ensemble (ExtraTrees + HistGB + Wide-MLP)": ensemble_clf,
+        "Extra Trees Clinical Classifier (180 trees)": et_clf,
+        "HistGradientBoosting Classifier": hgb_clf,
+        "Wide Deep MLP (256x128x64)": wide_mlp
     }
 
     best_model_name = None

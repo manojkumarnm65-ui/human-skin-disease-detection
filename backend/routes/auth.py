@@ -1,8 +1,10 @@
 import os
 import re
 import time
+import json
 import random
 import smtplib
+import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from flask import Blueprint, request, jsonify
@@ -21,26 +23,77 @@ def validate_password_strength(password):
         return False, 'Password must be at least 6 characters long.'
     return True, ''
 
-# In-memory OTP storage for registration and password recovery
-# Structure: { email: { 'otp': '123456', 'expires_at': timestamp, 'type': 'registration'|'reset', 'data': {...} } }
-OTP_STORE = {}
+# Persistent OTP storage for registration and password recovery across restarts
+OTP_STORAGE_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.otp_store.json')
 
-LAST_SMTP_STATUS = {
-    'checked_at': None,
-    'working': None,
-    'last_error': None
-}
+def get_otp_expiry_seconds():
+    """
+    Returns OTP validity duration in seconds.
+    Default: 7 days (168 hours = 604,800 seconds) for long-term reliability.
+    Configurable via OTP_EXPIRE_DAYS or OTP_EXPIRE_HOURS or OTP_EXPIRE_SECONDS.
+    """
+    days = int(os.environ.get('OTP_EXPIRE_DAYS', 7))
+    hours = int(os.environ.get('OTP_EXPIRE_HOURS', days * 24))
+    return int(os.environ.get('OTP_EXPIRE_SECONDS', hours * 3600))
+
+def get_otp_expiry_display():
+    """Returns human-friendly expiration description like '7 days' or '24 hours'."""
+    secs = get_otp_expiry_seconds()
+    hours = secs // 3600
+    if hours >= 24:
+        days = hours // 24
+        return f"{days} day{'s' if days > 1 else ''}"
+    return f"{hours} hour{'s' if hours > 1 else ''}"
+
+def load_otp_store():
+    """Reads saved OTP records from persistent file."""
+    if os.path.exists(OTP_STORAGE_FILE):
+        try:
+            with open(OTP_STORAGE_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+def save_otp_store(store):
+    """Safely saves active OTP records to disk."""
+    try:
+        with open(OTP_STORAGE_FILE, 'w', encoding='utf-8') as f:
+            json.dump(store, f, indent=2)
+    except Exception as e:
+        print(f"[OTP STORAGE ERROR] Could not save store: {e}", flush=True)
 
 def clean_expired_otps():
-    """Removes expired OTP tokens from memory store."""
+    """Removes expired OTP tokens from persistent store."""
     now = time.time()
-    expired_keys = [k for k, v in OTP_STORE.items() if v.get('expires_at', 0) < now]
-    for k in expired_keys:
-        OTP_STORE.pop(k, None)
+    store = load_otp_store()
+    expired_keys = [k for k, v in store.items() if v.get('expires_at', 0) < now]
+    if expired_keys:
+        for k in expired_keys:
+            store.pop(k, None)
+        save_otp_store(store)
+
+def get_otp_record(email):
+    clean_expired_otps()
+    store = load_otp_store()
+    return store.get((email or '').strip().lower())
+
+def set_otp_record(email, record):
+    clean_expired_otps()
+    store = load_otp_store()
+    store[(email or '').strip().lower()] = record
+    save_otp_store(store)
+
+def remove_otp_record(email):
+    store = load_otp_store()
+    key = (email or '').strip().lower()
+    if key in store:
+        store.pop(key, None)
+        save_otp_store(store)
 
 @auth_bp.route('/send-registration-otp', methods=['POST'])
 def send_registration_otp():
-    """Generates a 6-digit OTP for new user registration and stores pending user state."""
+    """Generates a 6-digit OTP for new user registration with long validity and stores state."""
     clean_expired_otps()
     data = request.get_json() or {}
     full_name = (data.get('full_name') or '').strip()
@@ -66,11 +119,13 @@ def send_registration_otp():
     existing_user = User.query.filter_by(email=email).first()
     is_existing = bool(existing_user)
 
-    # Generate 6-digit cryptographic-safe OTP
+    # Generate 6-digit OTP code & calculate long-term expiration (7 days default)
     otp_code = f"{random.randint(100000, 999999)}"
-    expires_at = time.time() + 600  # 10 minutes expiry
+    expiry_seconds = get_otp_expiry_seconds()
+    expiry_display = get_otp_expiry_display()
+    expires_at = time.time() + expiry_seconds
 
-    OTP_STORE[email] = {
+    record = {
         'otp': otp_code,
         'expires_at': expires_at,
         'type': 'registration',
@@ -78,54 +133,35 @@ def send_registration_otp():
         'password': password,
         'is_existing': is_existing
     }
+    set_otp_record(email, record)
 
     # Dispatch real email via SMTP
     email_result = send_otp_email(
         to_email=email,
         otp_code=otp_code,
         full_name=full_name,
-        purpose='registration'
+        purpose='registration',
+        expiry_display=expiry_display
     )
 
+    print(f"\n[OTP DISPATCH] >>> Verification Code for {email}: {otp_code} (Valid for {expiry_display}) <<<\n", flush=True)
+
     was_sent = email_result.get('success', False)
-    smtp_err = email_result.get('error', '')
-
-    if was_sent:
-        LAST_SMTP_STATUS['working'] = True
-        LAST_SMTP_STATUS['last_error'] = None
-        if is_existing:
-            msg_text = f'Verification code successfully dispatched to {email}. Verifying will update your credentials and log you in.'
-        else:
-            msg_text = f'Verification code successfully dispatched to {email}.'
-        email_err_msg = ''
-    else:
-        LAST_SMTP_STATUS['working'] = False
-        LAST_SMTP_STATUS['last_error'] = smtp_err
-        if '535' in smtp_err or 'BadCredentials' in smtp_err or 'Connection unexpectedly closed' in smtp_err:
-            email_err_msg = 'Gmail rejected sender credentials (535 BadCredentials). Please configure a 16-character App Password at myaccount.google.com/apppasswords.'
-        else:
-            email_err_msg = f'{smtp_err}'
-        msg_text = f'Verification code generated for {email}, but email delivery failed: {email_err_msg}'
-
-    print(f"\n=======================================================", flush=True)
-    print(f"[REGISTRATION OTP] Recipient: {email}", flush=True)
-    print(f"[REGISTRATION OTP] Code: {otp_code} (Valid for 10 minutes)", flush=True)
-    print(f"[REGISTRATION OTP] Delivered to inbox: {was_sent}", flush=True)
     if not was_sent:
-        print(f"[REGISTRATION OTP] Warning: {email_err_msg}", flush=True)
-    print(f"=======================================================\n", flush=True)
+        error_msg = email_result.get('error') or "Failed to deliver verification email. Please check your SMTP configuration."
+        return jsonify({
+            'error': error_msg,
+            'email': email,
+            'email_sent': False
+        }), 400
 
-    res_data = {
-        'message': msg_text,
-        'expires_in': 600,
+    return jsonify({
+        'message': f'Verification OTP successfully dispatched to {email}. Code is valid for {expiry_display}. Please check your inbox and spam folder.',
+        'expires_in': expiry_seconds,
+        'expiry_display': expiry_display,
         'email': email,
-        'email_sent': was_sent,
-        'email_error': email_err_msg,
-        'dev_otp': otp_code if not was_sent else None,
-        'email_simulated': email_result.get('simulated', False)
-    }
-
-    return jsonify(res_data), 200
+        'email_sent': True
+    }), 200
 
 @auth_bp.route('/verify-registration-otp', methods=['POST'])
 def verify_registration_otp():
@@ -138,12 +174,12 @@ def verify_registration_otp():
     if not email or not submitted_otp:
         return jsonify({'error': 'Email and 6-digit verification code are required'}), 400
 
-    record = OTP_STORE.get(email)
+    record = get_otp_record(email)
     if not record or record.get('type') != 'registration':
         return jsonify({'error': 'No active registration OTP found for this email. Please request a new code.'}), 400
 
     if time.time() > record.get('expires_at', 0):
-        OTP_STORE.pop(email, None)
+        remove_otp_record(email)
         return jsonify({'error': 'Verification code has expired. Please request a new code.'}), 400
 
     if record.get('otp') != submitted_otp:
@@ -167,8 +203,8 @@ def verify_registration_otp():
 
         db.session.commit()
 
-        # Clean up OTP
-        OTP_STORE.pop(email, None)
+        # Clean up OTP upon successful registration
+        remove_otp_record(email)
 
         access_token = create_access_token(identity=str(user.id))
 
@@ -247,7 +283,7 @@ def login():
 
 @auth_bp.route('/forgot-password-otp', methods=['POST'])
 def forgot_password_otp():
-    """Generates and sends a 6-digit recovery OTP to the user's registered email."""
+    """Generates and sends a 6-digit recovery OTP with long validity to the user's registered email."""
     clean_expired_otps()
     data = request.get_json() or {}
     email = (data.get('email') or '').strip().lower()
@@ -258,60 +294,47 @@ def forgot_password_otp():
     user = User.query.filter_by(email=email).first()
     full_name = user.full_name if user else email.split('@')[0].capitalize()
 
+    # Generate 6-digit OTP code & calculate long-term expiration (7 days default)
     otp_code = f"{random.randint(100000, 999999)}"
-    expires_at = time.time() + 600
+    expiry_seconds = get_otp_expiry_seconds()
+    expiry_display = get_otp_expiry_display()
+    expires_at = time.time() + expiry_seconds
 
-    OTP_STORE[email] = {
+    record = {
         'otp': otp_code,
         'expires_at': expires_at,
         'type': 'password_reset',
         'is_new_user': (user is None)
     }
+    set_otp_record(email, record)
 
     # Dispatch real email via SMTP
     email_result = send_otp_email(
         to_email=email,
         otp_code=otp_code,
         full_name=full_name,
-        purpose='password_reset'
+        purpose='password_reset',
+        expiry_display=expiry_display
     )
 
+    print(f"\n[RECOVERY OTP DISPATCH] >>> Password Reset Code for {email}: {otp_code} (Valid for {expiry_display}) <<<\n", flush=True)
+
     was_sent = email_result.get('success', False)
-    smtp_err = email_result.get('error', '')
-
-    if was_sent:
-        LAST_SMTP_STATUS['working'] = True
-        LAST_SMTP_STATUS['last_error'] = None
-        msg_text = f'Password recovery code successfully sent to {email}.'
-        email_err_msg = ''
-    else:
-        LAST_SMTP_STATUS['working'] = False
-        LAST_SMTP_STATUS['last_error'] = smtp_err
-        if '535' in smtp_err or 'BadCredentials' in smtp_err or 'Connection unexpectedly closed' in smtp_err:
-            email_err_msg = 'Gmail rejected sender credentials (535 BadCredentials). Please configure a 16-character App Password at myaccount.google.com/apppasswords.'
-        else:
-            email_err_msg = f'{smtp_err}'
-        msg_text = f'Recovery code generated for {email}, but email delivery failed: {email_err_msg}'
-
-    print(f"\n=======================================================", flush=True)
-    print(f"[RECOVERY OTP] Recipient: {email}", flush=True)
-    print(f"[RECOVERY OTP] Code: {otp_code} (Valid for 10 minutes)", flush=True)
-    print(f"[RECOVERY OTP] Delivered to inbox: {was_sent}", flush=True)
     if not was_sent:
-        print(f"[RECOVERY OTP] Warning: {email_err_msg}", flush=True)
-    print(f"=======================================================\n", flush=True)
+        error_msg = email_result.get('error') or "Failed to deliver recovery email. Please check your SMTP configuration."
+        return jsonify({
+            'error': error_msg,
+            'email': email,
+            'email_sent': False
+        }), 400
 
-    res_data = {
-        'message': msg_text,
-        'expires_in': 600,
+    return jsonify({
+        'message': f'Password recovery code successfully sent to {email}. Code is valid for {expiry_display}. Please check your inbox and spam folder.',
+        'expires_in': expiry_seconds,
+        'expiry_display': expiry_display,
         'email': email,
-        'email_sent': was_sent,
-        'email_error': email_err_msg,
-        'dev_otp': otp_code if not was_sent else None,
-        'email_simulated': email_result.get('simulated', False)
-    }
-
-    return jsonify(res_data), 200
+        'email_sent': True
+    }), 200
 
 @auth_bp.route('/reset-password', methods=['POST'])
 def reset_password():
@@ -333,12 +356,12 @@ def reset_password():
     if confirm_password and new_password != confirm_password:
         return jsonify({'error': 'Passwords do not match'}), 400
 
-    record = OTP_STORE.get(email)
+    record = get_otp_record(email)
     if not record or record.get('type') != 'password_reset':
         return jsonify({'error': 'No active password recovery request found for this email. Please request a new code.'}), 400
 
     if time.time() > record.get('expires_at', 0):
-        OTP_STORE.pop(email, None)
+        remove_otp_record(email)
         return jsonify({'error': 'Recovery code has expired. Please request a new code.'}), 400
 
     if record.get('otp') != submitted_otp:
@@ -355,7 +378,7 @@ def reset_password():
             user.set_password(new_password)
 
         db.session.commit()
-        OTP_STORE.pop(email, None)
+        remove_otp_record(email)
 
         return jsonify({
             'message': 'Password has been successfully updated! You can now log in with your new password.'
@@ -385,7 +408,7 @@ def get_current_user():
 
 @auth_bp.route('/smtp-status', methods=['GET'])
 def get_smtp_status():
-    """Returns whether SMTP is configured, its live working status, and the masked sender email."""
+    """Returns whether SMTP is configured and the masked sender email."""
     username = os.environ.get('SMTP_USERNAME', '').strip()
     password = os.environ.get('SMTP_PASSWORD', '').strip()
     configured = bool(username and password)
@@ -397,8 +420,6 @@ def get_smtp_status():
     
     return jsonify({
         'configured': configured,
-        'working': LAST_SMTP_STATUS.get('working'),
-        'last_error': LAST_SMTP_STATUS.get('last_error'),
         'sender_email': masked,
         'smtp_server': os.environ.get('SMTP_SERVER', 'smtp.gmail.com'),
         'smtp_port': int(os.environ.get('SMTP_PORT', 587)),
@@ -423,13 +444,26 @@ def configure_smtp():
     # 1. Test live SMTP login & dispatch a test verification email
     try:
         print(f"[SMTP VERIFY] Testing connection to {server}:{port} with user {username}...")
-        if port == 465:
-            smtp_client = smtplib.SMTP_SSL(server, port, timeout=12)
-        else:
-            smtp_client = smtplib.SMTP(server, port, timeout=12)
-            smtp_client.starttls()
-
-        smtp_client.login(username, password)
+        try:
+            ctx = ssl.create_default_context()
+            if port == 465:
+                smtp_client = smtplib.SMTP_SSL(server, port, context=ctx, timeout=15)
+            else:
+                smtp_client = smtplib.SMTP(server, port, timeout=15)
+                smtp_client.ehlo()
+                smtp_client.starttls(context=ctx)
+                smtp_client.ehlo()
+            smtp_client.login(username, password)
+        except (ssl.SSLCertVerificationError, ssl.SSLError):
+            unverified_ctx = ssl._create_unverified_context()
+            if port == 465:
+                smtp_client = smtplib.SMTP_SSL(server, port, context=unverified_ctx, timeout=15)
+            else:
+                smtp_client = smtplib.SMTP(server, port, timeout=15)
+                smtp_client.ehlo()
+                smtp_client.starttls(context=unverified_ctx)
+                smtp_client.ehlo()
+            smtp_client.login(username, password)
 
         # Dispatch test email
         test_msg = MIMEMultipart()
@@ -446,14 +480,10 @@ def configure_smtp():
         test_msg.attach(MIMEText(test_body, 'plain'))
         smtp_client.sendmail(username, [test_recipient], test_msg.as_string())
         smtp_client.quit()
-        LAST_SMTP_STATUS['working'] = True
-        LAST_SMTP_STATUS['last_error'] = None
         print(f"[SMTP VERIFY SUCCESS] Test email delivered to {test_recipient}!")
 
     except Exception as e:
         err = str(e)
-        LAST_SMTP_STATUS['working'] = False
-        LAST_SMTP_STATUS['last_error'] = err
         print(f"[SMTP VERIFY FAILED] Error: {err}")
         return jsonify({
             'error': f"SMTP Connection Failed: {err}. If using Gmail, ensure 2-Step Verification is ON and you generated a 16-character App Password at myaccount.google.com/apppasswords."

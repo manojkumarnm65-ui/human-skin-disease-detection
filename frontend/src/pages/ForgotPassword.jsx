@@ -39,9 +39,10 @@ const ForgotPassword = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [countdown, setCountdown] = useState(30); // 30-second SMTP OTP cooldown
-  const [emailSent, setEmailSent] = useState(true);
-  const [emailError, setEmailError] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
   const [devOtp, setDevOtp] = useState('');
+  const [expiryDisplay, setExpiryDisplay] = useState('7 days');
+  const [smtpError, setSmtpError] = useState('');
 
   // Live password requirements
   const passwordChecks = {
@@ -83,14 +84,15 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       const res = await authService.sendForgotPasswordOtp(email.trim());
-      setEmailSent(res.data.email_sent !== false);
-      setEmailError(res.data.email_error || '');
-      setDevOtp(res.data.dev_otp || '');
-      setSuccessMsg(res.data.message || `Recovery code sent to ${email.trim()}.`);
+      if (!res.data.email_sent) {
+        setErrorMsg(res.data.error || 'Failed to dispatch recovery email.');
+        return;
+      }
+      setSuccessMsg(res.data.message || `Recovery code successfully sent to ${email.trim()}.`);
       setStep(2);
       setCountdown(30);
     } catch (err) {
-      const msg = err.response?.data?.error || 'Failed to send recovery code. Please check your email.';
+      const msg = err.response?.data?.error || err.message || 'Failed to send recovery code. Please check your email configuration.';
       setErrorMsg(msg);
     } finally {
       setLoading(false);
@@ -156,10 +158,15 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       const res = await authService.sendForgotPasswordOtp(email.trim());
-      setSuccessMsg('New recovery code sent to your email.');
+      if (!res.data.email_sent) {
+        setErrorMsg(res.data.error || 'Failed to resend recovery code to recipient.');
+        return;
+      }
+      setSuccessMsg(res.data.message || 'New recovery code successfully sent to your email.');
       setCountdown(30);
     } catch (err) {
-      setErrorMsg('Could not resend code. Please wait a moment and retry.');
+      const msg = err.response?.data?.error || err.message || 'Could not resend code. Please wait a moment and retry.';
+      setErrorMsg(msg);
     } finally {
       setLoading(false);
     }
@@ -321,39 +328,38 @@ const ForgotPassword = () => {
             <div
               className="animate-fade-in"
               style={{
-                background: 'linear-gradient(135deg, rgba(8, 123, 255, 0.12) 0%, rgba(8, 201, 245, 0.08) 100%)',
-                border: '1px solid rgba(8, 201, 245, 0.4)',
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(8, 201, 245, 0.1) 100%)',
+                border: '1px solid rgba(16, 185, 129, 0.5)',
                 borderRadius: 'var(--radius-md)',
                 padding: '14px 18px',
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: '12px',
-                boxShadow: '0 0 20px rgba(8, 201, 245, 0.2)',
+                boxShadow: '0 0 20px rgba(16, 185, 129, 0.2)',
               }}
             >
               <div
-                className="animate-float"
                 style={{
                   width: '36px',
                   height: '36px',
                   borderRadius: '10px',
-                  background: 'rgba(8, 201, 245, 0.2)',
+                  background: 'rgba(16, 185, 129, 0.2)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: 'var(--cyan-accent)',
+                  color: '#10B981',
                   flexShrink: 0,
                   marginTop: '2px',
                 }}
               >
-                <Mail size={18} />
+                <CheckCircle2 size={18} />
               </div>
               <div>
                 <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF', marginBottom: '4px' }}>
-                  Recovery Code Dispatched
+                  Recovery Code Sent to Your Email!
                 </div>
                 <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                  A 6-digit recovery code was sent to <strong style={{ color: 'var(--cyan-accent)' }}>{email}</strong>. Please check your inbox and spam folder.
+                  A 6-digit recovery code was successfully dispatched to <strong style={{ color: 'var(--cyan-accent)' }}>{email}</strong>. This code is active and valid for <strong style={{ color: '#10B981' }}>{expiryDisplay}</strong>. Please check your inbox and spam folder.
                 </div>
               </div>
             </div>
@@ -371,83 +377,17 @@ const ForgotPassword = () => {
             }}>
               <span>Recipient: <strong>{email}</strong></span>
               <span style={{ 
-                color: countdown <= 10 ? '#EF4444' : 'var(--cyan-accent)', 
+                color: '#10B981', 
                 fontWeight: 800,
-                background: 'rgba(1, 75, 170, 0.2)',
+                background: 'rgba(16, 185, 129, 0.12)',
                 padding: '4px 10px',
                 borderRadius: '12px',
-                border: '1px solid rgba(8, 201, 245, 0.3)'
+                border: '1px solid rgba(16, 185, 129, 0.35)',
+                fontSize: '0.82rem'
               }}>
-                ⏱️ {formatTimer(countdown)}
+                🛡️ Active &amp; Valid for {expiryDisplay}
               </span>
             </div>
-
-            {emailSent === false && (
-              <div style={{
-                background: 'rgba(239, 68, 68, 0.12)',
-                border: '1px solid rgba(239, 68, 68, 0.45)',
-                borderRadius: 'var(--radius-md)',
-                padding: '12px 14px',
-                fontSize: '0.83rem',
-                color: '#FCA5A5'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ fontWeight: 700, color: '#F87171', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <AlertCircle size={15} />
-                    Email Delivery Alert
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setShowSmtpModal(true)}
-                    style={{
-                      background: 'rgba(8, 201, 245, 0.15)',
-                      border: '1px solid #08C9F5',
-                      borderRadius: '4px',
-                      color: '#08C9F5',
-                      fontSize: '0.74rem',
-                      fontWeight: 700,
-                      padding: '3px 8px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Update App Password
-                  </button>
-                </div>
-                <p style={{ margin: '0 0 8px 0', lineHeight: 1.4, color: '#E2E8F0' }}>
-                  {emailError || 'Google rejected the sender credentials (535 BadCredentials). An email could not reach your inbox until a valid Google App Password is provided.'}
-                </p>
-                {devOtp && (
-                  <div style={{
-                    background: 'rgba(2, 11, 28, 0.85)',
-                    border: '1px dashed #F59E0B',
-                    borderRadius: 'var(--radius-sm)',
-                    padding: '8px 12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    color: '#FDE68A'
-                  }}>
-                    <span>Recovery OTP: <strong style={{ color: '#08C9F5', letterSpacing: '2px', fontSize: '1.05rem', marginLeft: '6px' }}>{devOtp}</strong></span>
-                    <button
-                      type="button"
-                      onClick={() => setOtp(devOtp)}
-                      style={{
-                        background: 'linear-gradient(135deg, #014BAA, #08C9F5)',
-                        border: 'none',
-                        borderRadius: 'var(--radius-sm)',
-                        color: '#FFFFFF',
-                        fontWeight: 700,
-                        fontSize: '0.74rem',
-                        padding: '4px 10px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Insert Code
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
 
             <div>
               <label className="form-label" style={{ fontSize: '0.9rem', marginBottom: '6px', display: 'block' }}>

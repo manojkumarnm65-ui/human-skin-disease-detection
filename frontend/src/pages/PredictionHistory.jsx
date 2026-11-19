@@ -44,6 +44,12 @@ const ALL_CONDITIONS = [
   'Seborrheic Dermatitis',
   'Folliculitis',
   'Lichen Planus',
+  'Warts (Verruca)',
+  'Scabies',
+  "Athlete's Foot (Tinea Pedis)",
+  'Nail Fungus (Onychomycosis)',
+  'Cellulitis',
+  'Chickenpox (Varicella)',
 ];
 
 const PredictionHistory = () => {

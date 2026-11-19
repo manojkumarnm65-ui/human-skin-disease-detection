@@ -1,6 +1,7 @@
 import os
 import re
 import smtplib
+import ssl
 import email.utils
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -51,6 +52,7 @@ def _open_smtp_session(cfg):
     """
     Connects and logs into SMTP server with automatic port/protocol fallback.
     Tries 587 (STARTTLS) and 465 (SSL) to guarantee delivery across strict network firewalls.
+    Supports resilient SSL context negotiation.
     """
     primary_port = cfg['port']
     primary_is_ssl = (primary_port == 465)
@@ -64,26 +66,34 @@ def _open_smtp_session(cfg):
 
     last_exc = None
     for port, is_ssl in attempts:
-        try:
-            print(f"[EMAIL SERVICE] Connecting to {cfg['server']}:{port} (SSL={is_ssl})...", flush=True)
-            if is_ssl:
-                server = smtplib.SMTP_SSL(cfg['server'], port, timeout=14)
-            else:
-                server = smtplib.SMTP(cfg['server'], port, timeout=14)
-                if cfg['use_tls']:
-                    server.starttls()
-
+        for use_unverified in (False, True):
             try:
-                server.login(cfg['username'], cfg['password'])
-            except (smtplib.SMTPAuthenticationError, smtplib.SMTPServerDisconnected) as auth_err:
-                if 'gmail' in cfg['server'].lower() or cfg.get('is_gmail'):
-                    raise Exception("Gmail rejected sender credentials (535 BadCredentials). Please generate a fresh 16-character Google App Password at myaccount.google.com/apppasswords and update it in SMTP settings.")
-                raise auth_err
+                print(f"[EMAIL SERVICE] Connecting to {cfg['server']}:{port} (SSL={is_ssl}, UnverifiedContext={use_unverified})...", flush=True)
+                ctx = ssl._create_unverified_context() if use_unverified else ssl.create_default_context()
+                
+                if is_ssl:
+                    server = smtplib.SMTP_SSL(cfg['server'], port, context=ctx, timeout=15)
+                else:
+                    server = smtplib.SMTP(cfg['server'], port, timeout=15)
+                    if cfg['use_tls']:
+                        server.ehlo()
+                        server.starttls(context=ctx)
+                        server.ehlo()
 
-            return server, port
-        except Exception as e:
-            last_exc = e
-            print(f"[EMAIL SERVICE] Connection to port {port} failed: {e}. Trying fallback...", flush=True)
+                server.login(cfg['username'], cfg['password'])
+                return server, port
+            except (ssl.SSLCertVerificationError, ssl.SSLError) as ssl_err:
+                last_exc = ssl_err
+                if not use_unverified:
+                    print(f"[EMAIL SERVICE] SSL verify notice on port {port}: {ssl_err}. Retrying with unverified context...", flush=True)
+                    continue
+                else:
+                    print(f"[EMAIL SERVICE] SSL failed on port {port}: {ssl_err}.", flush=True)
+                    break
+            except Exception as e:
+                last_exc = e
+                print(f"[EMAIL SERVICE] Connection to port {port} failed: {e}. Trying fallback...", flush=True)
+                break
 
     raise last_exc
 
@@ -98,10 +108,11 @@ def send_email(to_email, subject, html_content, plain_content=None):
 
     cfg = _load_smtp_config()
     if not cfg['username'] or not cfg['password']:
-        print(f"\n[EMAIL SERVICE NOTICE] SMTP credentials not set in backend/.env.")
-        print(f"Would have delivered '{subject}' to: {clean_to}\n", flush=True)
-        return {"success": False, "simulated": True, "message": "SMTP not configured in backend/.env", "recipient": clean_to}
+        err = "SMTP credentials (SMTP_USERNAME and SMTP_PASSWORD) are not configured in backend/.env. Please configure your Gmail sender email and 16-character Google App Password."
+        print(f"\n[EMAIL SERVICE ERROR] {err}\nTarget recipient: {clean_to}\n", flush=True)
+        return {"success": False, "error": err, "recipient": clean_to}
 
+    server = None
     try:
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
@@ -116,15 +127,20 @@ def send_email(to_email, subject, html_content, plain_content=None):
 
         server, active_port = _open_smtp_session(cfg)
         server.sendmail(cfg['from_email'], [clean_to], msg.as_string())
-        server.quit()
         print(f"[EMAIL SERVICE SUCCESS] Real email delivered to {clean_to} via port {active_port}!", flush=True)
         return {"success": True, "message": f"Email successfully delivered to {clean_to}", "recipient": clean_to}
     except Exception as e:
         err_msg = str(e)
         print(f"[EMAIL SERVICE ERROR] Failed to deliver email to {clean_to}: {err_msg}", flush=True)
-        return {"success": False, "error": err_msg, "simulated": True, "recipient": clean_to}
+        return {"success": False, "error": f"SMTP Delivery Failed: {err_msg}", "recipient": clean_to}
+    finally:
+        if server:
+            try:
+                server.quit()
+            except Exception:
+                pass
 
-def send_otp_email(to_email, otp_code, full_name="User", purpose="registration"):
+def send_otp_email(to_email, otp_code, full_name="User", purpose="registration", expiry_display="7 days"):
     """
     Dispatches a professional 6-digit OTP verification email to the specified recipient email.
     Supports standard SMTP / Gmail TLS/SSL delivery with automatic error recovery.
@@ -188,7 +204,7 @@ def send_otp_email(to_email, otp_code, full_name="User", purpose="registration")
                   </div>
 
                   <p style="margin: 0 0 12px; font-size: 14px; color: #94A3B8; line-height: 1.5; text-align: center;">
-                    ⏳ This code is valid for <strong>10 minutes</strong>. Do not share this code with anyone.
+                    ⏳ This code is valid for <strong>{expiry_display}</strong> (extended long-term validity). Do not share this code with anyone.
                   </p>
 
                   <!-- Security Advisory -->
@@ -225,7 +241,7 @@ Hello {full_name},
 
 Your 6-digit verification code is: {otp_code}
 
-This code is valid for 10 minutes. Please enter this code to {action_text}.
+This code is valid for {expiry_display}. Please enter this code to {action_text}.
 If you did not request this verification code, please ignore this email.
 
 Human Skin Disease Detection AI Platform
@@ -233,7 +249,7 @@ Human Skin Disease Detection AI Platform
 
     res = send_email(to_email=clean_to, subject=subject, html_content=html_content, plain_content=plain_content)
     if not res.get('success'):
-        print(f"\n>>> Active OTP for {clean_to}: {otp_code} <<<\n", flush=True)
+        print(f"\n>>> Active OTP for {clean_to}: {otp_code} (Valid for {expiry_display}) <<<\n", flush=True)
     return res
 
 def send_prediction_report_email(to_email, patient_name, prediction_data, disease_info=None, personal_note=""):

@@ -18,12 +18,21 @@ venv/
 **/venv/
 ENV/
 *.db
+*.sqlite
 *.sqlite3
 backend/skincare_ai.db
 
-# Environment
+# Secrets & Environment
 .env
-.env.local
+.env.*
+*.env
+backend/.env
+**/backend/.env
+!.env.example
+!backend/.env.example
+.otp_store.json
+backend/.otp_store.json
+**/backend/.otp_store.json
 
 # Uploads and temporary artifacts
 backend/uploads/*

@@ -134,6 +134,20 @@ def delete_account():
         return jsonify({'error': 'Incorrect password entered. Please enter your valid current account password.'}), 400
 
     try:
+        # Clean up all uploaded lesion images from disk
+        from flask import current_app
+        import os
+        upload_folder = current_app.config.get('UPLOAD_FOLDER', '')
+        if upload_folder and os.path.exists(upload_folder):
+            for p in user.predictions:
+                if p.image_path:
+                    fp = os.path.join(upload_folder, p.image_path)
+                    if os.path.exists(fp):
+                        try:
+                            os.remove(fp)
+                        except Exception:
+                            pass
+
         db.session.delete(user)
         db.session.commit()
         return jsonify({'message': 'Account and all associated records have been permanently deleted.'}), 200

@@ -4,6 +4,7 @@ from PIL import Image, ImageStat
 import numpy as np
 from werkzeug.utils import secure_filename
 from config import Config
+from .feature_extractor import check_skin_lesion_plausibility
 
 def is_allowed_file(filename):
     if '.' not in filename:
@@ -61,20 +62,30 @@ def assess_image_quality(img: Image.Image):
         issues.append("Lesion appears blurry or out of focus.")
         tips.append("Keep your camera steady and tap on the lesion to focus before taking the photo.")
 
+    # 5. Skin Gamut & Plausibility Validation
+    is_skin, skin_msg, skin_meta = check_skin_lesion_plausibility(img)
+    if not is_skin:
+        issues.append(skin_msg)
+        tips.append("Please upload a well-lit closeup photograph of a skin lesion.")
+
     score = 100
     if issues:
         score -= len(issues) * 20
-    score = max(20, min(100, int(score)))
+    if not is_skin:
+        score = min(score, 20)
+    score = max(10, min(100, int(score)))
 
-    is_suitable = score >= 50 and not (mean_brightness < 30 or mean_brightness > 235)
+    is_suitable = is_skin and (score >= 40) and not (mean_brightness < 20 or mean_brightness > 245)
 
     return {
         'suitable': is_suitable,
         'quality_score': score,
         'mean_brightness': round(float(mean_brightness), 1),
         'sharpness_score': round(float(sharpness_score), 2),
+        'skin_coverage': skin_meta.get('skin_fraction', 0.0),
+        'is_skin_plausible': is_skin,
         'issues': issues,
-        'recommendations': tips if tips else ["Image lighting and focus are acceptable for analysis."]
+        'recommendations': tips if tips else ["Image lighting, resolution, and cutaneous features are suitable for analysis."]
     }
 
 def save_and_validate_image(file_storage):
@@ -105,6 +116,11 @@ def save_and_validate_image(file_storage):
         image = image.convert('RGB')
 
     quality_assessment = assess_image_quality(image)
+
+    # Reject non-cutaneous or blank files early with actionable guidance
+    if not quality_assessment.get('is_skin_plausible', True):
+        issue_msg = quality_assessment['issues'][0] if quality_assessment['issues'] else "Image lacks human skin features."
+        raise ValueError(f"{issue_msg} Please ensure you upload a clear, well-lit photograph of a skin condition or lesion.")
 
     # Generate unique filename
     ext = os.path.splitext(filename)[1].lower()

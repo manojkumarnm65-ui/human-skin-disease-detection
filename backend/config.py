@@ -8,8 +8,13 @@ load_dotenv(os.path.join(basedir, '.env'))
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'skincare-ai-super-secret-key-2026-secure')
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'jwt-skincare-ai-secret-key-2026')
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=7)
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'jwt-skincare-ai-super-secret-key-2026-production-secure')
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=30)
+    
+    # Long-term OTP validity settings (Default: 7 days / 168 hours)
+    OTP_EXPIRE_DAYS = int(os.environ.get('OTP_EXPIRE_DAYS', 7))
+    OTP_EXPIRE_HOURS = int(os.environ.get('OTP_EXPIRE_HOURS', OTP_EXPIRE_DAYS * 24))
+    OTP_EXPIRE_SECONDS = int(os.environ.get('OTP_EXPIRE_SECONDS', OTP_EXPIRE_HOURS * 3600))
     
     # Primary MySQL URL with fallback to SQLite if MySQL is unavailable
     # e.g., mysql+pymysql://root:password@localhost:3306/skincare_ai
